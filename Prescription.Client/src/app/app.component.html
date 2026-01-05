@@ -1,0 +1,33 @@
+<header>
+    <nav class="app-nav">
+        <div class="nav-brand">
+            <span class="brand-text">E-Prescription</span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-link" [class.active]="currentView === 'prescription'"
+                (click)="currentView = 'prescription'">
+                E-Prescription
+            </button>
+            <button class="nav-link" [class.active]="currentView === 'template'" (click)="currentView = 'template'"
+                routerLink="/templates">
+                Templates
+            </button>
+            <button class="nav-link" [class.active]="currentView === 'ocr'" (click)="currentView = 'ocr'"
+                routerLink="/ocr">
+                OCR
+            </button>
+
+        </div>
+    </nav>
+</header>
+
+<main class="app-main">
+    @if (currentView === 'prescription') {
+    <div class="flex flex-row prescription-view">
+        <app-e-prescription></app-e-prescription>
+        <app-clinical-bot></app-clinical-bot>
+    </div>
+    } @else {
+    <router-outlet></router-outlet>
+    }
+</main>

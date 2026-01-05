@@ -1,0 +1,48 @@
+{
+    "patientName": "John Smith",
+    "patientAge": 45,
+    "patientGender": "Male",
+    "chiefComplaint": "Fever and Cough for 3 days with difficulty breathing",
+    "medicalHistory": "Hypertension, controlled with medication. Type 2 Diabetes on oral hypoglycemics. No known drug allergies. Previous appendectomy 10 years ago.",
+    "physicalExamination": "Patient appears in mild distress. Temperature 101.2°F. Pulse 82/min. BP 130/85 mmHg. Throat erythematous with mild exudate. Cervical lymphadenopathy present. Chest: bilateral crackles on auscultation. Heart: Regular rate and rhythm, no murmurs.",
+    "diagnosis": "Acute Bronchitis with Upper Respiratory Tract Infection",
+    "treatmentPlan": "Start antibiotic therapy with Azithromycin. Recommend rest and increased fluid intake. Antipyretics for fever management. Steam inhalation twice daily. Follow up in 5 days or sooner if symptoms worsen. Chest X-ray if no improvement.",
+    "medications": [
+        {
+            "name": "Azithromycin",
+            "dosage": "500mg",
+            "frequency": "1-0-0 (Once in morning)",
+            "duration": "3 days",
+            "instructions": "Take on empty stomach, 1 hour before or 2 hours after meals"
+        },
+        {
+            "name": "Paracetamol",
+            "dosage": "500mg",
+            "frequency": "1-1-1 (Three times daily)",
+            "duration": "5 days",
+            "instructions": "Take after meals with plenty of water"
+        },
+        {
+            "name": "Cetirizine",
+            "dosage": "10mg",
+            "frequency": "0-0-1 (Once at night)",
+            "duration": "5 days",
+            "instructions": "Take at bedtime"
+        },
+        {
+            "name": "Omeprazole",
+            "dosage": "20mg",
+            "frequency": "1-0-0 (Once in morning)",
+            "duration": "5 days",
+            "instructions": "Take before breakfast"
+        }
+    ],
+    "advice": "Take medications as prescribed. Avoid cold drinks, ice cream, and spicy foods. Rest adequately and maintain proper sleep hygiene. Drink plenty of warm fluids (water, herbal tea, warm lemon water). Avoid smoking and dusty environments. Use a humidifier at night if available. Gargle with warm salt water 2-3 times daily.",
+    "followUpDate": "2025-11-25",
+    "weight": "75",
+    "height": "172",
+    "pulse": "82",
+    "bloodPressure": "130/85",
+    "temperature": "101.2",
+    "referralComments": "Refer to pulmonologist if symptoms persist beyond 7 days or if patient develops shortness of breath at rest"
+}

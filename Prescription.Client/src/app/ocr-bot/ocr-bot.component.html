@@ -1,0 +1,340 @@
+<div class="ocr-app">
+    <!-- Header Bar -->
+    <div class="ocr-header">
+        <div class="header-left">
+            <i class="fas fa-file-medical-alt"></i>
+            <span class="header-title">Medical Document OCR</span>
+        </div>
+        <div class="header-center" *ngIf="hasResult">
+            <span>{{ selectedFile?.name }}</span>
+        </div>
+        <div class="header-right">
+            <span class="confidence-tag" *ngIf="hasResult && ocrResult">
+                <i class="fas fa-check-circle"></i> {{ (ocrResult.confidence * 100).toFixed(0) }}%
+            </span>
+            <button class="btn-header" *ngIf="hasResult" (click)="reset()">
+                <i class="fas fa-redo"></i> New
+            </button>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" *ngIf="hasResult">
+        <div class="toolbar-left">
+            <button class="btn-tool" [class.active]="showAllRegions" (click)="toggleShowAllRegions()"
+                title="Toggle regions">
+                <i class="fas" [class.fa-eye]="showAllRegions" [class.fa-eye-slash]="!showAllRegions"></i>
+            </button>
+            <select class="tool-select" [(ngModel)]="selectedCategory" (change)="filterByCategory(selectedCategory)">
+                <option [ngValue]="null">All Categories</option>
+                <option *ngFor="let cat of getUniqueCategories()" [value]="cat">{{ getCategoryDisplayName(cat) }}
+                </option>
+            </select>
+            <span class="region-count">{{ ocrResult?.textRegions?.length || 0 }} regions</span>
+        </div>
+        <div class="toolbar-tabs">
+            <button class="tab-btn" [class.active]="activeTab === 'sections'" (click)="activeTab = 'sections'">
+                <i class="fas fa-list-alt"></i> Sections
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'summary'" (click)="activeTab = 'summary'">
+                <i class="fas fa-file-alt"></i> Summary
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'chat'" (click)="activeTab = 'chat'">
+                <i class="fas fa-comments"></i> Chat
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                <i class="fas fa-code"></i> Raw
+            </button>
+        </div>
+        <div class="toolbar-right">
+            <span class="lang-tag" *ngIf="ocrResult && ocrResult.detectedLanguage">{{ ocrResult.detectedLanguage
+                }}</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Upload Panel (when no result) -->
+        <div class="upload-panel" *ngIf="!hasResult">
+            <div class="upload-zone" [class.drag-over]="isDragOver" [class.has-file]="selectedFile"
+                (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                (click)="triggerFileInput()">
+                <input #fileInput type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp"
+                    (change)="onFileSelect($event)" hidden>
+
+                <div class="upload-placeholder" *ngIf="!selectedFile">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Drop medical document here or click to browse</span>
+                    <small>JPEG, PNG, GIF, WebP, BMP (Max 10MB)</small>
+                </div>
+
+                <div class="upload-preview" *ngIf="selectedFile && previewUrl">
+                    <img [src]="previewUrl" alt="Preview">
+                    <div class="file-details">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ selectedFile.name }}</span>
+                        <small>({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-error" *ngIf="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ errorMessage }}
+            </div>
+
+            <button class="btn-process" [disabled]="!selectedFile || isProcessing" (click)="processImage()">
+                <i class="fas" [class.fa-magic]="!isProcessing" [class.fa-spinner]="isProcessing"
+                    [class.fa-spin]="isProcessing"></i>
+                <span *ngIf="!isProcessing">Process Document</span>
+                <span *ngIf="isProcessing">Analyzing...</span>
+            </button>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="results-grid" *ngIf="hasResult && ocrResult">
+            <!-- Left: Document Panel -->
+            <div class="panel panel-document">
+                <div class="panel-title-bar">
+                    <i class="fas fa-image"></i> Document Preview
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas #documentCanvas></canvas>
+                </div>
+                <div class="legend-bar">
+                    <div class="legend-item" *ngFor="let cat of getUniqueCategories()">
+                        <span class="legend-dot" [style.background-color]="getCategoryColor(cat)"></span>
+                        <span>{{ getCategoryDisplayName(cat) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Content Panel -->
+            <div class="panel panel-content">
+                <!-- Sections Tab -->
+                <div class="tab-panel" *ngIf="activeTab === 'sections'">
+                    <!-- Patient Info -->
+                    <div class="info-section" *ngIf="hasPatientInfo()">
+                        <div class="section-title">
+                            <i class="fas fa-user" [style.color]="getCategoryColor('patient_info')"></i> Patient
+                            Information
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell" *ngIf="patientInfo?.name">
+                                <label>Name</label>
+                                <span>{{ patientInfo?.name }}</span>
+                            </div>
+                            <div class="info-cell" *ngIf="patientInfo?.age">
+                                <label>Age</label>
+                                <span>{{ patientInfo?.age }}</span>
+                            </div>
+                            <div class="info-cell" *ngIf="patientInfo?.gender">
+                                <label>Gender</label>
+                                <span>{{ patientInfo?.gender }}</span>
+                            </div>
+                            <div class="info-cell" *ngIf="patientInfo?.id">
+                                <label>ID</label>
+                                <span>{{ patientInfo?.id }}</span>
+                            </div>
+                            <div class="info-cell wide" *ngIf="patientInfo?.contactDetails">
+                                <label>Contact</label>
+                                <span>{{ patientInfo?.contactDetails }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Info -->
+                    <div class="info-section" *ngIf="hasDoctorInfo()">
+                        <div class="section-title">
+                            <i class="fas fa-user-md" [style.color]="getCategoryColor('doctor_info')"></i> Doctor
+                            Information
+                        </div>
+                        <div class="info-row">
+                            <div class="info-cell" *ngIf="doctorInfo?.name">
+                                <label>Name</label>
+                                <span class="doctor-name">{{ doctorInfo?.name }}</span>
+                            </div>
+                            <div class="info-cell wide" *ngIf="doctorInfo?.specialization">
+                                <label>Specialization</label>
+                                <span>{{ doctorInfo?.specialization }}</span>
+                            </div>
+                            <div class="info-cell wide" *ngIf="doctorInfo?.clinicHospital">
+                                <label>Hospital/Clinic</label>
+                                <span>{{ doctorInfo?.clinicHospital }}</span>
+                            </div>
+                            <div class="info-cell" *ngIf="doctorInfo?.license">
+                                <label>License</label>
+                                <span>{{ doctorInfo?.license }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lab Results Table -->
+                    <div class="info-section" *ngIf="hasLabResults()">
+                        <div class="section-title">
+                            <i class="fas fa-flask" [style.color]="getCategoryColor('lab_result')"></i> Lab Results
+                        </div>
+                        <table class="data-table lab-table">
+                            <thead>
+                                <tr>
+                                    <th>Test Name</th>
+                                    <th>Result</th>
+                                    <th>Reference</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let lab of labResults">
+                                    <td class="test-name">{{ lab.testName }}</td>
+                                    <td class="test-result">{{ lab.result }}</td>
+                                    <td class="test-ref">{{ lab.referenceValue }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Diagnosis -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.diagnosis)">
+                        <div class="section-title">
+                            <i class="fas fa-stethoscope" [style.color]="getCategoryColor('diagnosis')"></i> Diagnosis
+                        </div>
+                        <div class="section-text">{{ ocrResult.sections.diagnosis }}</div>
+                    </div>
+
+                    <!-- Medications Table -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.medications)">
+                        <div class="section-title">
+                            <i class="fas fa-pills" [style.color]="getCategoryColor('medication')"></i> Medications
+                        </div>
+                        <table class="data-table med-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Duration</th>
+                                    <th>Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let med of ocrResult.sections.medications">
+                                    <td class="med-name">{{ med.name || '-' }}</td>
+                                    <td>{{ med.dosage || '-' }}</td>
+                                    <td>{{ med.frequency || '-' }}</td>
+                                    <td>{{ med.duration || '-' }}</td>
+                                    <td>{{ med.instructions || '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Vital Signs -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.vitalSigns)">
+                        <div class="section-title">
+                            <i class="fas fa-heartbeat" [style.color]="getCategoryColor('vital_signs')"></i> Vital Signs
+                        </div>
+                        <div class="section-text">{{ ocrResult.sections.vitalSigns }}</div>
+                    </div>
+
+                    <!-- Clinical Notes -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.clinicalNotes)">
+                        <div class="section-title">
+                            <i class="fas fa-notes-medical" [style.color]="getCategoryColor('clinical_notes')"></i>
+                            Clinical Notes
+                        </div>
+                        <div class="section-text">{{ ocrResult.sections.clinicalNotes }}</div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.instructions)">
+                        <div class="section-title">
+                            <i class="fas fa-clipboard-list" [style.color]="getCategoryColor('instructions')"></i>
+                            Instructions
+                        </div>
+                        <div class="section-text">{{ ocrResult.sections.instructions }}</div>
+                    </div>
+
+                    <!-- Follow-up -->
+                    <div class="info-section" *ngIf="hasSectionContent(ocrResult.sections.followUp)">
+                        <div class="section-title">
+                            <i class="fas fa-calendar-check" [style.color]="getCategoryColor('follow_up')"></i>
+                            Follow-up
+                        </div>
+                        <div class="section-text">{{ ocrResult.sections.followUp }}</div>
+                    </div>
+
+                    <!-- Detected Regions -->
+                    <div class="info-section regions-section"
+                        *ngIf="ocrResult.textRegions && ocrResult.textRegions.length">
+                        <div class="section-title">
+                            <i class="fas fa-map-marker-alt"></i> Detected Regions ({{ ocrResult.textRegions.length }})
+                        </div>
+                        <div class="regions-list">
+                            <div class="region-item" *ngFor="let region of ocrResult.textRegions"
+                                [class.highlighted]="region === highlightedRegion"
+                                (mouseenter)="highlightRegion(region)" (mouseleave)="clearHighlight()">
+                                <span class="region-badge" [style.background-color]="getCategoryColor(region.category)">
+                                    {{ getCategoryDisplayName(region.category) }}
+                                </span>
+                                <span class="region-text">{{ region.text }}</span>
+                                <span class="region-conf">{{ (region.confidence * 100).toFixed(0) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Tab -->
+                <div class="tab-panel" *ngIf="activeTab === 'summary'">
+                    <div class="summary-box">
+                        <div class="summary-title">
+                            <i class="fas fa-file-medical"></i> Document Summary
+                        </div>
+                        <div class="summary-content" *ngIf="ocrResult.summary"
+                            [innerHTML]="formatSummary(ocrResult.summary)"></div>
+                        <div class="summary-empty" *ngIf="!ocrResult.summary">No summary available.</div>
+                    </div>
+                    <div class="meta-row">
+                        <span><i class="fas fa-language"></i> {{ ocrResult.detectedLanguage || 'Unknown' }}</span>
+                        <span><i class="fas fa-clock"></i> {{ ocrResult.processedAt | date:'short' }}</span>
+                        <span><i class="fas fa-percentage"></i> {{ (ocrResult.confidence * 100).toFixed(1) }}%</span>
+                    </div>
+                </div>
+
+                <!-- Chat Tab -->
+                <div class="tab-panel chat-panel" *ngIf="activeTab === 'chat'">
+                    <div class="chat-messages" #chatContainer>
+                        <div class="chat-msg" *ngFor="let msg of chatMessages" [class.user]="msg.type === 'user'"
+                            [class.assistant]="msg.type === 'assistant'">
+                            <div class="msg-icon">
+                                <i class="fas" [class.fa-user]="msg.type === 'user'"
+                                    [class.fa-robot]="msg.type === 'assistant'"></i>
+                            </div>
+                            <div class="msg-body">
+                                <p>{{ msg.content }}</p>
+                                <small>{{ msg.timestamp | date:'shortTime' }}</small>
+                            </div>
+                        </div>
+                        <div class="chat-msg assistant" *ngIf="isAskingQuestion">
+                            <div class="msg-icon"><i class="fas fa-robot"></i></div>
+                            <div class="msg-body">
+                                <div class="typing"><span></span><span></span><span></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" [(ngModel)]="currentQuestion" (keyup.enter)="askQuestion()"
+                            placeholder="Ask about this document..." [disabled]="isAskingQuestion">
+                        <button (click)="askQuestion()" [disabled]="!currentQuestion.trim() || isAskingQuestion">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Raw Tab -->
+                <div class="tab-panel raw-panel" *ngIf="activeTab === 'preview'">
+                    <div class="raw-title"><i class="fas fa-code"></i> Extracted Raw Text</div>
+                    <pre class="raw-text">{{ ocrResult.extractedText }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

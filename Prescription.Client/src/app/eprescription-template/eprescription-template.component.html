@@ -1,0 +1,701 @@
+<div class="template-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-clipboard-list logo-icon"></i>
+                <span class="logo-text">Templates</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            @for (tab of tabs; track tab.id) {
+            <button class="nav-item" [class.active]="activeTab === tab.id" [style.--tab-color]="tab.color"
+                (click)="setActiveTab(tab.id)">
+                <span class="nav-indicator"></span>
+                <span class="nav-content">
+                    <span class="nav-label">{{ tab.label }}</span>
+                    <span class="nav-count">
+                        @switch (tab.id) {
+                        @case ('diseases') { {{ diseases.totalCount }} }
+                        @case ('symptoms') { {{ symptoms.totalCount }} }
+                        @case ('drugs') { {{ drugs.totalCount }} }
+                        @case ('chief-complaints') { {{ chiefComplaints.totalCount }} }
+                        @case ('examinations') { {{ examinations.totalCount }} }
+                        @case ('advices') { {{ advices.totalCount }} }
+                        @case ('reports') { {{ reports.totalCount }} }
+                        }
+                    </span>
+                </span>
+            </button>
+            }
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="content-header">
+            <div class="header-left">
+                <h1 class="page-title" [style.color]="getTabColor(activeTab)">
+                    @switch (activeTab) {
+                    @case ('diseases') { Disease Templates }
+                    @case ('symptoms') { Symptom Templates }
+                    @case ('drugs') { Medications }
+                    @case ('chief-complaints') { Chief Complaints }
+                    @case ('examinations') { Examinations }
+                    @case ('advices') { Advices }
+                    @case ('reports') { Investigations }
+                    }
+                </h1>
+                <p class="page-subtitle">Manage your prescription templates</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" (click)="openCreateModal()">
+                    <i class="fa-solid fa-plus btn-icon"></i>
+                    <span>Create New</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" [(ngModel)]="searchTerm" (input)="onSearchInput($event)"
+                    (blur)="onSearchBlur()" (keyup.enter)="loadData()" placeholder="Type to search...">
+                @if (searchTerm) {
+                <button class="search-clear" (click)="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+                }
+                @if (isSearching) {
+                <span class="search-spinner"></span>
+                }
+                @if (showAutocomplete && autocompleteResults.length > 0) {
+                <div class="autocomplete-dropdown">
+                    @for (item of autocompleteResults; track item.id) {
+                    <div class="autocomplete-item" (mousedown)="selectAutocompleteItem(item)">
+                        <span class="ac-text">{{ item.displayText }}</span>
+                        @if (item.subText) {
+                        <span class="ac-sub">{{ item.subText }}</span>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            <div class="search-info">{{ getCurrentPagedResult().totalCount }} items</div>
+        </div>
+
+        <!-- Loading -->
+        @if (isLoading) {
+        <div class="loading-state">
+            <div class="loader"></div><span>Loading...</span>
+        </div>
+        }
+
+        <!-- Data Grid -->
+        <div class="data-grid" [class.loading]="isLoading">
+            <!-- Disease Cards -->
+            @if (activeTab === 'diseases') {
+            @if (diseases.items.length === 0 && !isLoading) {
+            <div class="empty-state">
+                <i class="fa-solid fa-hospital empty-icon"></i>
+                <h3>No disease templates</h3>
+                <button class="btn btn-primary" (click)="openCreateModal()">Create Template</button>
+            </div>
+            }
+            @for (disease of diseases.items; track disease.id) {
+            <div class="data-card">
+                <div class="card-header">
+                    <code class="shortcut-badge">{{ disease.shortcut }}</code>
+                    <div class="card-actions">
+                        <button class="icon-btn" title="Preview" (click)="previewDisease(disease.id)"><i
+                                class="fa-solid fa-eye"></i></button>
+                        <button class="icon-btn" title="Edit" (click)="editDisease(disease.id)"><i
+                                class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="icon-btn danger" title="Delete"
+                            (click)="confirmDelete(disease.id, 'diseases')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                <h3 class="card-title">{{ disease.name }}</h3>
+                <div class="card-meta"><span class="meta-item"><i class="fa-solid fa-pills"></i> {{ disease.drugCount }}
+                        medications</span></div>
+            </div>
+            }
+            }
+
+            <!-- Symptom Cards -->
+            @if (activeTab === 'symptoms') {
+            @if (symptoms.items.length === 0 && !isLoading) {
+            <div class="empty-state">
+                <i class="fa-solid fa-stethoscope empty-icon"></i>
+                <h3>No symptom templates</h3>
+                <button class="btn btn-primary" (click)="openCreateModal()">Create Template</button>
+            </div>
+            }
+            @for (symptom of symptoms.items; track symptom.id) {
+            <div class="data-card">
+                <div class="card-header">
+                    <code class="shortcut-badge">{{ symptom.shortcut }}</code>
+                    <div class="card-actions">
+                        <button class="icon-btn" title="Preview" (click)="previewSymptom(symptom.id)"><i
+                                class="fa-solid fa-eye"></i></button>
+                        <button class="icon-btn" title="Edit" (click)="editSymptom(symptom.id)"><i
+                                class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="icon-btn danger" title="Delete"
+                            (click)="confirmDelete(symptom.id, 'symptoms')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                <h3 class="card-title">{{ symptom.name }}</h3>
+                <div class="card-meta">
+                    <span class="meta-item"><i class="fa-solid fa-clipboard-list"></i> {{ symptom.chiefComplaintCount
+                        }}</span>
+                    <span class="meta-item"><i class="fa-solid fa-microscope"></i> {{ symptom.examinationCount }}</span>
+                    <span class="meta-item"><i class="fa-solid fa-pills"></i> {{ symptom.drugCount }}</span>
+                    <span class="meta-item"><i class="fa-solid fa-chart-line"></i> {{ symptom.investigationCount
+                        }}</span>
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Drug List -->
+            @if (activeTab === 'drugs') {
+            @if (drugs.items.length === 0 && !isLoading) {
+            <div class="empty-state"><i class="fa-solid fa-pills empty-icon"></i>
+                <h3>No medications</h3><button class="btn btn-primary" (click)="openCreateModal()">Add
+                    Medication</button>
+            </div>
+            }
+            @for (drug of drugs.items; track drug.id) {
+            <div class="data-card compact">
+                <div class="card-row">
+                    <div class="card-main">
+                        <h3 class="card-title">{{ drug.name }}</h3>
+                        <div class="card-details">
+                            @if (drug.form) { <span class="detail-tag">{{ drug.form }}</span> }
+                            @if (drug.strength) { <span class="detail-tag">{{ drug.strength }}</span> }
+                            @if (drug.brandName) { <span class="detail-tag brand">{{ drug.brandName }}</span> }
+                        </div>
+                    </div>
+                    <div class="card-stats">
+                        <span class="stat">{{ drug.diseaseCount }} diseases</span>
+                        <span class="stat">{{ drug.symptomCount }} symptoms</span>
+                    </div>
+                    <button class="icon-btn danger" (click)="confirmDelete(drug.id, 'drugs')"><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Chief Complaints -->
+            @if (activeTab === 'chief-complaints') {
+            @if (chiefComplaints.items.length === 0 && !isLoading) {
+            <div class="empty-state"><i class="fa-solid fa-clipboard-list empty-icon"></i>
+                <h3>No chief complaints</h3><button class="btn btn-primary" (click)="openCreateModal()">Add</button>
+            </div>
+            }
+            @for (cc of chiefComplaints.items; track cc.id) {
+            <div class="data-card compact">
+                <div class="card-row">
+                    <div class="card-main">
+                        <p class="card-description">{{ cc.description }}</p>
+                    </div>
+                    <div class="card-stats"><span class="stat">{{ cc.symptomCount }} symptoms</span></div>
+                    <button class="icon-btn danger" (click)="confirmDelete(cc.id, 'chief-complaints')"><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Examinations -->
+            @if (activeTab === 'examinations') {
+            @if (examinations.items.length === 0 && !isLoading) {
+            <div class="empty-state"><i class="fa-solid fa-microscope empty-icon"></i>
+                <h3>No examinations</h3><button class="btn btn-primary" (click)="openCreateModal()">Add</button>
+            </div>
+            }
+            @for (exam of examinations.items; track exam.id) {
+            <div class="data-card compact">
+                <div class="card-row">
+                    <div class="card-main">
+                        <p class="card-description">{{ exam.description }}</p>
+                    </div>
+                    <div class="card-stats"><span class="stat">{{ exam.symptomCount }} symptoms</span></div>
+                    <button class="icon-btn danger" (click)="confirmDelete(exam.id, 'examinations')"><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Advices -->
+            @if (activeTab === 'advices') {
+            @if (advices.items.length === 0 && !isLoading) {
+            <div class="empty-state"><i class="fa-solid fa-lightbulb empty-icon"></i>
+                <h3>No advices</h3><button class="btn btn-primary" (click)="openCreateModal()">Add</button>
+            </div>
+            }
+            @for (advice of advices.items; track advice.id) {
+            <div class="data-card compact">
+                <div class="card-row">
+                    <div class="card-main">
+                        <p class="card-description">{{ advice.description }}</p>
+                    </div>
+                    <div class="card-stats"><span class="stat">{{ advice.symptomCount }} symptoms</span></div>
+                    <button class="icon-btn danger" (click)="confirmDelete(advice.id, 'advices')"><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Investigations -->
+            @if (activeTab === 'reports') {
+            @if (reports.items.length === 0 && !isLoading) {
+            <div class="empty-state"><i class="fa-solid fa-chart-line empty-icon"></i>
+                <h3>No investigations</h3><button class="btn btn-primary" (click)="openCreateModal()">Add</button>
+            </div>
+            }
+            @for (report of reports.items; track report.id) {
+            <div class="data-card compact">
+                <div class="card-row">
+                    <div class="card-main">
+                        <div class="report-header"><code class="oid-badge">{{ report.oid }}</code><strong>{{
+                                report.abbreviation }}</strong></div>
+                        <p class="card-description">{{ report.fullName }}</p>
+                    </div>
+                    <div class="card-stats">
+                        @if (report.cost) { <span class="stat cost">৳{{ report.cost }}</span> }
+                        <span class="stat">{{ report.symptomCount }} symptoms</span>
+                    </div>
+                    <button class="icon-btn danger" (click)="confirmDelete(report.id, 'reports')"><i
+                            class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+            }
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (getCurrentPagedResult().totalPages > 1) {
+        <div class="pagination">
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(1)"><i
+                    class="fa-solid fa-angles-left"></i></button>
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)"><i
+                    class="fa-solid fa-chevron-left"></i></button>
+            @for (page of getPageNumbers(); track page) {
+            <button class="page-btn" [class.active]="page === currentPage" (click)="onPageChange(page)">{{ page
+                }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage === getCurrentPagedResult().totalPages"
+                (click)="onPageChange(currentPage + 1)"><i class="fa-solid fa-chevron-right"></i></button>
+            <button class="page-btn" [disabled]="currentPage === getCurrentPagedResult().totalPages"
+                (click)="onPageChange(getCurrentPagedResult().totalPages)"><i
+                    class="fa-solid fa-angles-right"></i></button>
+            <span class="page-info">Page {{ currentPage }} of {{ getCurrentPagedResult().totalPages }}</span>
+        </div>
+        }
+    </main>
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showCreateModal) {
+<div class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ getCreateFormTitle() }}</h2>
+            <button class="modal-close" (click)="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <!-- Disease Form -->
+            @if (activeTab === 'diseases') {
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group"><label>Shortcut <span class="required">*</span></label><input type="text"
+                            [(ngModel)]="newDisease.shortcut" placeholder="DISMigraine"></div>
+                    <div class="form-group"><label>Name <span class="required">*</span></label><input type="text"
+                            [(ngModel)]="newDisease.name" placeholder="Migraine"></div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-pills"></i> Medications</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-2">
+                            <input type="text" [value]="drugSearchTerm"
+                                (input)="onDrugSearch($any($event.target).value)" (blur)="hideAutocomplete('drug')"
+                                placeholder="Search drug...">
+                            @if (showDrugAutocomplete && drugAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">
+                                @for (item of drugAutocomplete; track item.id) {
+                                <div class="autocomplete-item" (mousedown)="selectDrug(item)"><span>{{ item.displayText
+                                        }}</span>@if (item.subText) { <small>{{ item.subText }}</small> }</div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <div class="field-group"><input type="text" [(ngModel)]="tempDosageInstructions"
+                                placeholder="Dosage (১+০+১)"></div>
+                        <button class="btn btn-add" (click)="addDrugToTemplate()"><i class="fa-solid fa-plus"></i>
+                            Add</button>
+                    </div>
+                </div>
+                <div class="items-grid">
+                    @for (drug of newDisease.drugs; track $index; let i = $index) {
+                    <div class="item-chip"><span class="chip-text">{{ drug.name }} {{ drug.strength }} - {{
+                            drug.dosageInstructions }}</span><button class="chip-remove"
+                            (click)="removeDrugFromTemplate(i)"><i class="fa-solid fa-xmark"></i></button></div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Symptom Form -->
+            @if (activeTab === 'symptoms') {
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group"><label>Shortcut <span class="required">*</span></label><input type="text"
+                            [(ngModel)]="newSymptom.shortcut" placeholder="SYNHeadache"></div>
+                    <div class="form-group"><label>Name <span class="required">*</span></label><input type="text"
+                            [(ngModel)]="newSymptom.name" placeholder="Headache"></div>
+                    <div class="form-group"><label>Follow Up</label><input type="text" [(ngModel)]="newSymptom.followUp"
+                            placeholder="After 7 days"></div>
+                </div>
+            </div>
+
+            <!-- Chief Complaints -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-clipboard-list"></i> Chief Complaints</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-grow">
+                            <input type="text" [value]="ccSearchTerm" (input)="onCCSearch($any($event.target).value)"
+                                (blur)="hideAutocomplete('chief-complaint')" (keyup.enter)="addCCManually()"
+                                placeholder="Search or type...">
+                            @if (showCCAutocomplete && ccAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">@for (item of ccAutocomplete; track item.id) { <div
+                                    class="autocomplete-item" (mousedown)="selectCC(item)">{{ item.displayText }}</div>
+                                }</div>
+                            }
+                        </div>
+                        <button class="btn btn-add" (click)="addCCManually()"><i class="fa-solid fa-plus"></i>
+                            Add</button>
+                    </div>
+                </div>
+                <div class="items-grid">@for (cc of newSymptom.chiefComplaints; track $index; let i = $index) { <div
+                        class="item-chip"><span class="chip-text">{{ cc }}</span><button class="chip-remove"
+                            (click)="removeCC(i)"><i class="fa-solid fa-xmark"></i></button></div> }</div>
+            </div>
+
+            <!-- Examinations -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-microscope"></i> Examinations</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-grow">
+                            <input type="text" [value]="examSearchTerm"
+                                (input)="onExamSearch($any($event.target).value)"
+                                (blur)="hideAutocomplete('examination')" (keyup.enter)="addExamManually()"
+                                placeholder="Search or type...">
+                            @if (showExamAutocomplete && examAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">@for (item of examAutocomplete; track item.id) { <div
+                                    class="autocomplete-item" (mousedown)="selectExam(item)">{{ item.displayText }}
+                                </div> }</div>
+                            }
+                        </div>
+                        <button class="btn btn-add" (click)="addExamManually()"><i class="fa-solid fa-plus"></i>
+                            Add</button>
+                    </div>
+                </div>
+                <div class="items-grid">@for (exam of newSymptom.examinations; track $index; let i = $index) { <div
+                        class="item-chip"><span class="chip-text">{{ exam }}</span><button class="chip-remove"
+                            (click)="removeExam(i)"><i class="fa-solid fa-xmark"></i></button></div> }</div>
+            </div>
+
+            <!-- Advices -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-lightbulb"></i> Advices</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-grow">
+                            <input type="text" [value]="adviceSearchTerm"
+                                (input)="onAdviceSearch($any($event.target).value)" (blur)="hideAutocomplete('advice')"
+                                (keyup.enter)="addAdviceManually()" placeholder="Search or type...">
+                            @if (showAdviceAutocomplete && adviceAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">@for (item of adviceAutocomplete; track item.id) { <div
+                                    class="autocomplete-item" (mousedown)="selectAdvice(item)">{{ item.displayText }}
+                                </div> }</div>
+                            }
+                        </div>
+                        <button class="btn btn-add" (click)="addAdviceManually()"><i class="fa-solid fa-plus"></i>
+                            Add</button>
+                    </div>
+                </div>
+                <div class="items-grid">@for (advice of newSymptom.advices; track $index; let i = $index) { <div
+                        class="item-chip"><span class="chip-text">{{ advice }}</span><button class="chip-remove"
+                            (click)="removeAdvice(i)"><i class="fa-solid fa-xmark"></i></button></div> }</div>
+            </div>
+
+            <!-- Medications -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-pills"></i> Medications</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-2">
+                            <input type="text" [value]="drugSearchTerm"
+                                (input)="onDrugSearch($any($event.target).value)" (blur)="hideAutocomplete('drug')"
+                                placeholder="Search drug...">
+                            @if (showDrugAutocomplete && drugAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">@for (item of drugAutocomplete; track item.id) { <div
+                                    class="autocomplete-item" (mousedown)="selectDrug(item)"><span>{{ item.displayText
+                                        }}</span>@if (item.subText) { <small>{{ item.subText }}</small> }</div> }</div>
+                            }
+                        </div>
+                        <div class="field-group"><input type="text" [(ngModel)]="tempDosageInstructions"
+                                placeholder="Dosage (১+০+১)"></div>
+                        <button class="btn btn-add" (click)="addDrugToTemplate()"><i class="fa-solid fa-plus"></i>
+                            Add</button>
+                    </div>
+                </div>
+                <div class="items-grid">@for (drug of newSymptom.drugs; track $index; let i = $index) { <div
+                        class="item-chip"><span class="chip-text">{{ drug.name }} {{ drug.strength }} - {{
+                            drug.dosageInstructions }}</span><button class="chip-remove"
+                            (click)="removeDrugFromTemplate(i)"><i class="fa-solid fa-xmark"></i></button></div> }</div>
+            </div>
+
+            <!-- Investigations -->
+            <div class="form-section">
+                <h3 class="section-title"><i class="fa-solid fa-chart-line"></i> Investigations</h3>
+                <div class="autocomplete-field">
+                    <div class="field-row">
+                        <div class="field-group flex-grow">
+                            <input type="text" [value]="reportSearchTerm"
+                                (input)="onReportSearch($any($event.target).value)" (blur)="hideAutocomplete('report')"
+                                placeholder="Search investigation...">
+                            @if (showReportAutocomplete && reportAutocomplete.length > 0) {
+                            <div class="autocomplete-dropdown">@for (item of reportAutocomplete; track item.id) { <div
+                                    class="autocomplete-item" (mousedown)="selectReport(item)"><span>{{ item.displayText
+                                        }}</span>@if (item.subText) { <small>{{ item.subText }}</small> }</div> }</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="items-grid">@for (oid of newSymptom.investigationOIDs; track $index; let i = $index) { <div
+                        class="item-chip"><span class="chip-text">{{ getReportNameByOID(oid) }}</span><button
+                            class="chip-remove" (click)="removeInvestigation(i)"><i
+                                class="fa-solid fa-xmark"></i></button></div> }</div>
+            </div>
+            }
+
+            <!-- Drug Form -->
+            @if (activeTab === 'drugs') {
+            <div class="form-section">
+                <div class="form-group"><label>Drug Name <span class="required">*</span></label><input type="text"
+                        [(ngModel)]="newDrug.name" placeholder="Paracetamol"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Form</label><input type="text" [(ngModel)]="newDrug.form"
+                            placeholder="Tab, Cap, Syrup"></div>
+                    <div class="form-group"><label>Brand Name</label><input type="text" [(ngModel)]="newDrug.brandName"
+                            placeholder="Napa"></div>
+                    <div class="form-group"><label>Strength</label><input type="text" [(ngModel)]="newDrug.strength"
+                            placeholder="500mg"></div>
+                </div>
+            </div>
+            }
+
+            @if (activeTab === 'chief-complaints') {
+            <div class="form-section">
+                <div class="form-group"><label>Description <span class="required">*</span></label><textarea
+                        [(ngModel)]="newChiefComplaint.description" rows="4"
+                        placeholder="Chief complaint..."></textarea></div>
+            </div>
+            }
+            @if (activeTab === 'examinations') {
+            <div class="form-section">
+                <div class="form-group"><label>Description <span class="required">*</span></label><textarea
+                        [(ngModel)]="newExamination.description" rows="4" placeholder="Examination..."></textarea></div>
+            </div>
+            }
+            @if (activeTab === 'advices') {
+            <div class="form-section">
+                <div class="form-group"><label>Description <span class="required">*</span></label><textarea
+                        [(ngModel)]="newAdvice.description" rows="4" placeholder="Advice..."></textarea></div>
+            </div>
+            }
+
+            @if (activeTab === 'reports') {
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group"><label>OID <span class="required">*</span></label><input type="number"
+                            [(ngModel)]="newReport.oid" placeholder="ID"></div>
+                    <div class="form-group"><label>Abbreviation <span class="required">*</span></label><input
+                            type="text" [(ngModel)]="newReport.abbreviation" placeholder="CBC"></div>
+                </div>
+                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text"
+                        [(ngModel)]="newReport.fullName" placeholder="Complete Blood Count"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Default Value</label><input type="text"
+                            [(ngModel)]="newReport.defaultValue" placeholder="Default"></div>
+                    <div class="form-group"><label>Normal Range</label><input type="text"
+                            [(ngModel)]="newReport.normalRange" placeholder="4.5-11.0"></div>
+                    <div class="form-group"><label>Cost (৳)</label><input type="number" [(ngModel)]="newReport.cost"
+                            placeholder="0"></div>
+                </div>
+            </div>
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="saveTemplate()" [disabled]="isSaving">
+                @if (isSaving) { <span class="btn-spinner"></span> Saving... } @else { {{ isEditMode ? 'Update' :
+                'Create' }} }
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Preview Modal -->
+@if (showPreviewModal) {
+<div class="modal-backdrop" (click)="closePreview()">
+    <div class="modal-container large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>@if (selectedDisease) { <i class="fa-solid fa-hospital"></i> {{ selectedDisease.name }} } @if
+                (selectedSymptom) { <i class="fa-solid fa-stethoscope"></i> {{
+                selectedSymptom.name }} }</h2>
+            <button class="modal-close" (click)="closePreview()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body preview-body">
+            @if (selectedDisease) {
+            <div class="preview-header-info"><code class="shortcut-badge large">{{ selectedDisease.shortcut }}</code>
+            </div>
+            <div class="preview-section">
+                <h3><i class="fa-solid fa-pills"></i> Medications ({{ selectedDisease.drugs.length }})</h3>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Drug</th>
+                            <th>Form</th>
+                            <th>Strength</th>
+                            <th>Dosage</th>
+                        </tr>
+                    </thead>
+                    <tbody>@for (drug of selectedDisease.drugs; track drug.id; let i = $index) { <tr>
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ drug.name }}</td>
+                            <td>{{ drug.form || '-' }}</td>
+                            <td>{{ drug.strength || '-' }}</td>
+                            <td>{{ drug.dosageInstructions || '-' }}</td>
+                        </tr> }</tbody>
+                </table>
+            </div>
+            }
+            @if (selectedSymptom) {
+            <div class="preview-header-info">
+                <code class="shortcut-badge large">{{ selectedSymptom.shortcut }}</code>
+                @if (selectedSymptom.followUp) { <span class="follow-up-badge">Follow Up: {{ selectedSymptom.followUp
+                    }}</span> }
+            </div>
+            @if (selectedSymptom.chiefComplaints.length) { <div class="preview-section">
+                <h3><i class="fa-solid fa-clipboard-list"></i> Chief Complaints</h3>
+                <ul class="preview-list">@for (cc of selectedSymptom.chiefComplaints; track cc.id) { <li>{{
+                        cc.description }}</li> }</ul>
+            </div> }
+            @if (selectedSymptom.examinations.length) { <div class="preview-section">
+                <h3><i class="fa-solid fa-microscope"></i> Examinations</h3>
+                <ul class="preview-list">@for (exam of selectedSymptom.examinations; track exam.id) { <li>{{
+                        exam.description }}</li> }</ul>
+            </div> }
+            @if (selectedSymptom.advices.length) { <div class="preview-section">
+                <h3><i class="fa-solid fa-lightbulb"></i> Advices</h3>
+                <ul class="preview-list">@for (advice of selectedSymptom.advices; track advice.id) { <li>{{
+                        advice.description }}</li> }</ul>
+            </div> }
+            @if (selectedSymptom.drugs.length) {
+            <div class="preview-section">
+                <h3><i class="fa-solid fa-pills"></i> Medications</h3>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Drug</th>
+                            <th>Form</th>
+                            <th>Strength</th>
+                            <th>Dosage</th>
+                        </tr>
+                    </thead>
+                    <tbody>@for (drug of selectedSymptom.drugs; track drug.id; let i = $index) { <tr>
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ drug.name }}</td>
+                            <td>{{ drug.form || '-' }}</td>
+                            <td>{{ drug.strength || '-' }}</td>
+                            <td>{{ drug.dosageInstructions || '-' }}</td>
+                        </tr> }</tbody>
+                </table>
+            </div>
+            }
+            @if (selectedSymptom.investigations.length) {
+            <div class="preview-section">
+                <h3><i class="fa-solid fa-chart-line"></i> Investigations</h3>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>OID</th>
+                            <th>Abbr</th>
+                            <th>Name</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>@for (inv of selectedSymptom.investigations; track inv.id) { <tr>
+                            <td><code>{{ inv.oid }}</code></td>
+                            <td><strong>{{ inv.abbreviation }}</strong></td>
+                            <td>{{ inv.fullName }}</td>
+                            <td>{{ inv.cost ? '৳' + inv.cost : '-' }}</td>
+                        </tr> }</tbody>
+                </table>
+            </div>
+            }
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closePreview()">Close</button>
+            @if (selectedDisease) { <button class="btn btn-primary"
+                (click)="closePreview(); editDisease(selectedDisease.id)">Edit</button> }
+            @if (selectedSymptom) { <button class="btn btn-primary"
+                (click)="closePreview(); editSymptom(selectedSymptom.id)">Edit</button> }
+        </div>
+    </div>
+</div>
+}
+
+<!-- Delete Modal -->
+@if (showDeleteConfirm) {
+<div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-container small" (click)="$event.stopPropagation()">
+        <div class="modal-header danger">
+            <h2><i class="fa-solid fa-triangle-exclamation"></i> Confirm Delete</h2><button class="modal-close"
+                (click)="cancelDelete()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="delete-message">Are you sure? This cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+            <button class="btn btn-danger" (click)="executeDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Toast -->
+@if (showToast) {
+<div class="toast" [class]="toastType">
+    <span class="toast-icon">@switch (toastType) { @case ('success') { <i class="fa-solid fa-check"></i> } @case
+        ('error') { <i class="fa-solid fa-xmark"></i> } @case ('info') { <i class="fa-solid fa-circle-info"></i> }
+        }</span>
+    <span class="toast-message">{{ toastMessage }}</span>
+</div>
+}

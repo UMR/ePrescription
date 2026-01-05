@@ -1,0 +1,99 @@
+.remote-streams-container {
+  width: 100%;
+  height: 100%;
+  background: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.no-remote-users {
+  text-align: center;
+  color: white;
+}
+
+.waiting-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 30px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.waiting-icon svg {
+  width: 60px;
+  height: 60px;
+  color: #667eea;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.no-remote-users h3 {
+  font-size: 24px;
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+
+.no-remote-users p {
+  color: #a0aec0;
+  font-size: 16px;
+  margin: 0;
+}
+
+.remote-users-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 15px;
+}
+
+.remote-users-grid.grid-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.remote-users-grid.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+}
+
+.remote-users-grid.grid-3 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+.remote-users-grid.grid-3 app-remote-user:first-child {
+  grid-column: 1 / -1;
+}
+
+.remote-users-grid.grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+@media (max-width: 768px) {
+  .remote-users-grid.grid-2,
+  .remote-users-grid.grid-3,
+  .remote-users-grid.grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .remote-users-grid.grid-3 app-remote-user:first-child {
+    grid-column: 1;
+  }
+}

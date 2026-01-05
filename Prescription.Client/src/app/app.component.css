@@ -1,0 +1,125 @@
+/* Navigation */
+.app-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 60px;
+  background: #0000009e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 28px;
+}
+
+.brand-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.nav-icon {
+  font-size: 16px;
+}
+
+/* Main Content */
+.app-main {
+  min-height: calc(100vh - 60px);
+  background: #f0f4f8;
+}
+
+.prescription-view {
+  height: calc(100vh - 60px);
+  gap: 0;
+}
+
+.prescription-view app-e-prescription {
+  flex: 1 1 75%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.prescription-view app-clinical-bot {
+  flex: 0 0 400px;
+  max-width: 400px;
+  overflow: auto;
+  border-left: 1px solid #e2e8f0;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+/* Responsive - hide clinical bot on smaller screens */
+@media (max-width: 1200px) {
+  .prescription-view app-clinical-bot {
+    flex: 0 0 280px;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .prescription-view {
+    flex-direction: column;
+  }
+
+  .prescription-view app-e-prescription {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .prescription-view app-clinical-bot {
+    flex: 0 0 auto;
+    max-width: 100%;
+    width: 100%;
+    max-height: 400px;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+}

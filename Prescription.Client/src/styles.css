@@ -1,0 +1,84 @@
+@media print {
+  body > *:not(app-root),
+  app-root > *:not(router-outlet):not(app-e-prescription):not(app-pdf-export),
+  .prescription-container,
+  .prescription-header,
+  .ai-banner,
+  .info-row,
+  .form-section,
+  .additional-row,
+  .toast,
+  .modal-overlay:not(.pdf-modal-overlay) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .pdf-modal-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    background: white !important;
+    padding: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    z-index: 1 !important;
+  }
+
+  .pdf-modal-container {
+    position: static !important;
+    max-width: none !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .pdf-close-btn {
+    display: none !important;
+  }
+
+  /* PDF Container adjustments */
+  .pdf-container {
+    background: white !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  .pdf-controls {
+    display: none !important;
+  }
+
+  .pdf-page {
+    width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 10mm 15mm !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  /* Page settings */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* Ensure proper colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset body */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

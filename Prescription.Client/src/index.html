@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Patient Prescription &amp; Record</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <style type="text/tailwindcss">
+    @layer base {
+      :root {
+        --color-primary: #1e40af;
+        --color-primary-light: #eff6ff;
+        --color-primary-hover: #1d4ed8;
+        --color-background-light: #f8fafc;
+        --color-background-dark: #0f172a;
+        --color-surface-light: #ffffff;
+        --color-surface-dark: #1e293b;
+        --color-border-light: #e2e8f0;
+        --color-border-dark: #334155;
+        --color-text-primary-light: #020617;
+        --color-text-primary-dark: #f8fafc;
+        --color-text-secondary-light: #475569;
+        --color-text-secondary-dark: #94a3b8;
+        --color-text-subtle-light: #64748b;
+        --color-text-subtle-dark: #64748b;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "var(--color-primary)",
+            "primary-light": "var(--color-primary-light)",
+            "primary-hover": "var(--color-primary-hover)",
+            background: {
+              light: "var(--color-background-light)",
+              dark: "var(--color-background-dark)",
+            },
+            surface: {
+              light: "var(--color-surface-light)",
+              dark: "var(--color-surface-dark)",
+            },
+            border: {
+              light: "var(--color-border-light)",
+              dark: "var(--color-border-dark)",
+            },
+            text: {
+              primary: {
+                light: "var(--color-text-primary-light)",
+                dark: "var(--color-text-primary-dark)",
+              },
+              secondary: {
+                light: "var(--color-text-secondary-light)",
+                dark: "var(--color-text-secondary-dark)",
+              },
+              subtle: {
+                light: "var(--color-text-subtle-light)",
+                dark: "var(--color-text-subtle-dark)",
+              },
+            },
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            lg: `0.75rem`,
+            md: `0.5rem`,
+            sm: `0.25rem`,
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+
+<body
+  class="font-sans bg-background-light dark:bg-background-dark text-text-secondary-light dark:text-text-secondary-dark">
+  <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
+</body>
+
+</html>

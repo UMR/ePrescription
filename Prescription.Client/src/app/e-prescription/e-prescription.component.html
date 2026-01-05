@@ -1,0 +1,975 @@
+<!-- Toast Notification -->
+<div class="toast" [class.show]="showNotificationFlag" [class.toast-success]="notificationType === 'success'"
+    [class.toast-error]="notificationType === 'error'" [class.toast-info]="notificationType === 'info'">
+    <i class="fa-solid" [class.fa-check-circle]="notificationType === 'success'"
+        [class.fa-exclamation-circle]="notificationType === 'error'"
+        [class.fa-info-circle]="notificationType === 'info'"></i>
+    <span>{{ notificationMessage }}</span>
+</div>
+
+<div class="eprescription-app">
+    <!-- ===== TOP HEADER BAR - Patient Info ===== -->
+    <header class="patient-header">
+        <div class="header-left-section">
+            <div class="id-field">
+                <label>ID No:</label>
+                <input type="text" [value]="patientIdNo" (input)="patientIdNo = $any($event.target).value"
+                    class="id-input" />
+                <button class="btn-icon-sm btn-search" (click)="searchPatientById()"><i
+                        class="fa-solid fa-search"></i></button>
+            </div>
+            <div class="find-field">
+                <label>Find:</label>
+                <input type="text" [(ngModel)]="patientSearchTerm" [ngModelOptions]="{standalone: true}"
+                    placeholder="Search..." class="find-input" (keydown.enter)="searchPatient()" />
+                <span class="find-in">in:</span>
+                <select class="find-select" [(ngModel)]="patientSearchType" [ngModelOptions]="{standalone: true}">
+                    <option value="id">New ID</option>
+                    <option value="name">Name</option>
+                    <option value="phone">Phone</option>
+                </select>
+                <button class="btn-outline-sm" (click)="searchPatient()"><i class="fa-solid fa-search"></i></button>
+            </div>
+            <button class="btn-outline-sm" (click)="editPersonalInfo()">Edit Personal Info</button>
+        </div>
+
+        <div class="header-center-section">
+            <div class="patient-info-grid">
+                <div class="info-row-item">
+                    <label>Name:</label>
+                    <input type="text" [formControl]="$any(prescriptionForm.get('patientName'))"
+                        class="info-input name-input" />
+                </div>
+                <div class="info-row-item">
+                    <label>DOB:</label>
+                    <input type="date" [(ngModel)]="patientDOB" [ngModelOptions]="{standalone: true}"
+                        class="info-input dob-input" />
+                </div>
+                <div class="info-row-item">
+                    <label>Address:</label>
+                    <input type="text" [(ngModel)]="patientAddress" [ngModelOptions]="{standalone: true}"
+                        class="info-input address-input" />
+                </div>
+                <div class="info-row-item">
+                    <label>Phone:</label>
+                    <input type="text" [(ngModel)]="patientPhone" [ngModelOptions]="{standalone: true}"
+                        class="info-input" />
+                </div>
+                <div class="info-row-item">
+                    <label>Ref'd by:</label>
+                    <input type="text" [(ngModel)]="referredBy" [ngModelOptions]="{standalone: true}"
+                        class="info-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right-section">
+            <div class="patient-extra-grid">
+                <div class="extra-row">
+                    <label>Gender:</label>
+                    <select [formControl]="$any(prescriptionForm.get('patientGender'))" class="gender-select">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <label>Sons:</label>
+                    <input type="number" [(ngModel)]="patientSons" [ngModelOptions]="{standalone: true}"
+                        class="mini-input" />
+                    <label>Daughters:</label>
+                    <input type="number" [(ngModel)]="patientDaughters" [ngModelOptions]="{standalone: true}"
+                        class="mini-input" />
+                </div>
+                <div class="compact-info-grid">
+                    <div class="compact-row">
+                        <label>Marr.:</label>
+                        <input type="text" [(ngModel)]="maritalStatus" [ngModelOptions]="{standalone: true}"
+                            class="compact-input" />
+                        <label>Occup.:</label>
+                        <input type="text" [(ngModel)]="occupation" [ngModelOptions]="{standalone: true}"
+                            class="compact-input" />
+                    </div>
+                    <div class="compact-row">
+                        <label>Alert:</label>
+                        <input type="text" [(ngModel)]="specialAlert" [ngModelOptions]="{standalone: true}"
+                            class="compact-input" />
+                        <label>Info:</label>
+                        <input type="text" [(ngModel)]="personalInfo" [ngModelOptions]="{standalone: true}"
+                            class="compact-input" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== VISIT NAVIGATION BAR ===== -->
+    <div class="visit-nav-bar">
+        <div class="nav-left">
+            <!-- <button class="btn-nav" title="No Operation" (click)="noOperation()"><i class="fa-solid fa-ban"></i> No
+                Op</button> -->
+            <button class="btn-nav" (click)="previousVisit()" [disabled]="visitNo <= 1"><i
+                    class="fa-solid fa-chevron-left"></i></button>
+            <span class="visit-info">Visit No: <strong>{{ visitNo }} of {{ totalVisits }}</strong></span>
+            <button class="btn-nav" (click)="nextVisit()" [disabled]="visitNo >= totalVisits"><i
+                    class="fa-solid fa-chevron-right"></i></button>
+            <button class="btn-nav" (click)="lastVisit()"><i class="fa-solid fa-forward"></i></button>
+            <button class="btn-nav btn-new" (click)="newVisit()" title="New Visit"><i
+                    class="fa-solid fa-plus"></i></button>
+            <select class="visit-type-select" [(ngModel)]="visitType" [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onVisitTypeChange($event)">
+                <option>New</option>
+                <option>Follow-up</option>
+            </select>
+            <span class="payment-label">Tk:</span>
+            <input type="text" [(ngModel)]="paymentAmount" [ngModelOptions]="{standalone: true}"
+                class="payment-input" />
+        </div>
+
+        <div class="nav-center">
+            <span class="visit-datetime">{{ currentDate | date:'dd MMM yyyy, hh:mm a' }}</span>
+            <span class="patient-age">Age: {{ calculateAge() }}</span>
+        </div>
+
+        <div class="nav-right">
+            <button class="btn-action btn-save" (click)="savePrescription()"><i class="fa-solid fa-save"></i>
+                Save</button>
+            <button class="btn-action" (click)="openImportTemplateModal()"><i class="fa-solid fa-file-import"></i>
+                Import Template</button>
+            <button class="btn-action" (click)="openSaveTemplateModal('global')"><i
+                    class="fa-solid fa-file-medical"></i> Save Template</button>
+            <div class="action-icons">
+                <button class="btn-icon-action" title="Print" (click)="printPrescription()"><i
+                        class="fa-solid fa-print"></i></button>
+                <button class="btn-icon-action" title="PDF" (click)="exportAsPDF()"><i
+                        class="fa-solid fa-file-pdf"></i></button>
+                <button class="btn-icon-action" title="Email" (click)="emailPrescription()"><i
+                        class="fa-solid fa-envelope"></i></button>
+                <button class="btn-icon-action" title="Settings" (click)="openSettings()"><i
+                        class="fa-solid fa-cog"></i></button>
+                <button class="btn-icon-action" title="Clear" (click)="clearForm()"><i
+                        class="fa-solid fa-eraser"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== AI Data Banner ===== -->
+    @if (hasAiData && !aiDataAccepted) {
+    <div class="ai-banner">
+        <div class="ai-banner-content">
+            <i class="fa-solid fa-robot"></i>
+            <div class="ai-banner-text">
+                <strong>AI-Generated Data Loaded</strong>
+                <span>Review the prescription data and accept or modify as needed</span>
+            </div>
+        </div>
+        <div class="ai-banner-actions">
+            <button class="btn btn-success btn-sm" (click)="acceptAllAiData()">
+                <i class="fa-solid fa-check"></i> Accept All
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="rejectAllAiData()">
+                <i class="fa-solid fa-times"></i> Reject All
+            </button>
+        </div>
+    </div>
+    }
+
+    <form [formGroup]="prescriptionForm">
+        <div class="main-content-grid">
+            <div class="left-column">
+                <div class="panel panel-pink chief-complaints-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Chief Complaints</span>
+
+                    </div>
+                    <div class="panel-content">
+                        <div class="autocomplete-container">
+                            <div class="input-with-add">
+                                <input type="text" [value]="chiefComplaintSearch"
+                                    (input)="onChiefComplaintSearch($event)" (keydown.enter)="addChiefComplaintManual()"
+                                    placeholder="Type complaint..." class="panel-input" />
+                                <button class="btn-add" (click)="addChiefComplaintManual()"><i
+                                        class="fa-solid fa-plus"></i></button>
+                            </div>
+                            @if (activeDropdown === 'chiefComplaint' && chiefComplaintSuggestions.length > 0) {
+                            <div class="dropdown-menu">
+                                @for (item of chiefComplaintSuggestions; track item.id) {
+                                <div class="dropdown-item" (click)="selectChiefComplaint(item)">{{ item.displayText }}
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <div class="items-display">
+                            @for (item of chiefComplaintItems; track item.id; let i = $index) {
+                            <div class="item-line" [class.item-ai]="item.source === 'ai'"
+                                [class.item-template]="item.source === 'template'"
+                                [class.item-modified]="item.isModified">
+                                <span class="source-badge" [class.badge-ai]="item.source === 'ai'"
+                                    [class.badge-db]="item.source === 'template'"
+                                    [class.badge-new]="item.source === 'manual'">{{ getSourceLabel(item.source)
+                                    }}</span>
+                                <input type="text" class="item-text-input" [value]="item.text"
+                                    (input)="updateChiefComplaint(i, $any($event.target).value)" />
+                                <button class="btn-save-item" (click)="saveIndividualChiefComplaint(i)"
+                                    [disabled]="item.isSaving || (!needsSave(item) && !item.isModified)"
+                                    [title]="getSaveButtonLabel(item)">
+                                    @if (item.isSaving) {
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                    } @else {
+                                    <i class="fa-solid fa-save"></i>
+                                    }
+                                </button>
+                                <button class="btn-remove-item" (click)="removeChiefComplaint(i)">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                            }
+                            @if (chiefComplaintItems.length === 0) {
+                            <div class="empty-hint">No chief complaints added</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Physical Findings Panel -->
+                <div class="panel panel-pink physical-findings-panel"
+                    [class.panel-expanded]="isPhysicalFindingsExpanded">
+                    <div class="panel-header">
+                        <span class="panel-title">Physical Findings:</span>
+                        <button class="btn-panel-icon" title="Expand/Collapse" (click)="togglePhysicalFindingsExpand()">
+                            <i class="fa-solid" [class.fa-expand]="!isPhysicalFindingsExpanded"
+                                [class.fa-compress]="isPhysicalFindingsExpanded"></i>
+                        </button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="vitals-row">
+                            <div class="vital-item">
+                                <label>Weight:</label>
+                                <input type="text" formControlName="weight" class="vital-input" />
+                                <span class="vital-unit">kg</span>
+                            </div>
+                            <div class="vital-item">
+                                <label>Height:</label>
+                                <input type="text" formControlName="height" class="vital-input" />
+                                <span class="vital-unit">cm</span>
+                            </div>
+                        </div>
+                        <div class="vitals-row">
+                            <div class="vital-item">
+                                <label>Pulse:</label>
+                                <input type="text" formControlName="pulse" class="vital-input" />
+                                <span class="vital-unit">/min</span>
+                            </div>
+                        </div>
+                        <div class="vitals-row">
+                            <div class="vital-item">
+                                <label>BP:</label>
+                                <input type="text" formControlName="bloodPressure" class="vital-input"
+                                    placeholder="120/80" />
+                                <span class="vital-unit">mmHg</span>
+                            </div>
+                        </div>
+                        <div class="findings-textarea">
+                            <textarea rows="4" [(ngModel)]="physicalFindingsText" [ngModelOptions]="{standalone: true}"
+                                placeholder="BP - 120/80 mmhg&#10;Abdomen: sign of ascites +&#10;Heart+ lung- NAD"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER-LEFT COLUMN: Additional Info, Drug History, Plan -->
+            <div class="center-left-column">
+                <!-- Additional Info Panel -->
+                <div class="panel panel-gray additional-info-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Additional info:</span>
+                        <button class="btn-panel-icon" title="Resize"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="3" [(ngModel)]="additionalInfo" [ngModelOptions]="{standalone: true}"
+                            placeholder="A1C- NORMAL RANGE"></textarea>
+                    </div>
+                </div>
+
+                <!-- Drug History Panel -->
+                <div class="panel panel-gray drug-history-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Drug History:</span>
+                        <!-- <button class="btn-panel-icon" title="Add"><i class="fa-solid fa-plus"></i></button> -->
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="4" [(ngModel)]="drugHistory" [ngModelOptions]="{standalone: true}"
+                            placeholder="Nabumetone, Naltrexone"></textarea>
+                    </div>
+                </div>
+
+                <!-- Plan of Treatment Panel -->
+                <div class="panel panel-gray plan-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Plan of treatment:</span>
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="5" formControlName="treatmentPlan"
+                            placeholder="Enter treatment plan..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER-RIGHT COLUMN: Tests -->
+            <div class="center-right-column">
+                <div class="panel panel-tests">
+                    <div class="panel-header tests-header">
+                        <span class="panel-title">Tests:</span>
+                        <select class="test-filter-select" [(ngModel)]="testFilter"
+                            [ngModelOptions]="{standalone: true}">
+                            <option>To be done ...</option>
+                            <option>Completed</option>
+                            <option>All</option>
+                        </select>
+                        <span class="panel-title-right">Sketch:</span>
+                        <button class="btn-panel-icon"><i class="fa-solid fa-camera"></i></button>
+                        <button class="btn-panel-icon"><i class="fa-solid fa-undo"></i></button>
+                    </div>
+                    <div class="panel-content tests-content">
+                        <div class="tests-list-area">
+                            <div class="autocomplete-container">
+                                <input type="text" [value]="investigationSearch" (input)="onInvestigationSearch($event)"
+                                    (keydown.enter)="addInvestigationManual()" placeholder="Search test..."
+                                    class="test-search-input" />
+                                @if (activeDropdown === 'investigation' && investigationSuggestions.length > 0) {
+                                <div class="dropdown-menu">
+                                    @for (item of investigationSuggestions; track item.id) {
+                                    <div class="dropdown-item" (click)="selectInvestigation(item)">{{ item.displayText
+                                        }}</div>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            <div class="tests-numbered-list">
+                                @for (item of investigationItems; track item.id; let i = $index) {
+                                <div class="test-item" [class.item-ai]="item.source === 'ai'"
+                                    [class.item-template]="item.source === 'template'"
+                                    [class.item-modified]="item.isModified">
+                                    <span class="test-number">{{ i + 1 }}.</span>
+                                    <span class="source-badge source-badge-sm" [class.badge-ai]="item.source === 'ai'"
+                                        [class.badge-db]="item.source === 'template'"
+                                        [class.badge-new]="item.source === 'manual'">{{ getSourceLabel(item.source)
+                                        }}</span>
+                                    <input type="text" class="test-name-input" [value]="item.text"
+                                        (input)="updateInvestigation(i, $any($event.target).value)" />
+                                    <button class="btn-save-item btn-save-sm" (click)="saveIndividualInvestigation(i)"
+                                        [disabled]="item.isSaving || (!needsSave(item) && !item.isModified)"
+                                        [title]="getSaveButtonLabel(item)">
+                                        @if (item.isSaving) {
+                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                        } @else {
+                                        <i class="fa-solid fa-save"></i>
+                                        }
+                                    </button>
+                                    <button class="btn-remove-test" (click)="removeInvestigation(i)">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                                }
+                                @if (investigationItems.length === 0) {
+                                <div class="empty-hint">No tests added</div>
+                                }
+                            </div>
+                        </div>
+                        <div class="sketch-area">
+                            <div class="sketch-header">
+                                <span class="sketch-title">Sketch:</span>
+                                <button class="btn-sketch-open" (click)="openSketchModal()" title="Open Sketch Editor">
+                                    <i class="fa-solid fa-expand"></i>
+                                </button>
+                            </div>
+                            <div class="sketch-preview" (click)="openSketchModal()">
+                                @if (sketchImageUrl) {
+                                <img [src]="sketchDataUrl || sketchImageUrl" alt="Sketch Preview"
+                                    class="sketch-preview-image" />
+                                <div class="sketch-preview-overlay">
+                                    <i class="fa-solid fa-pencil"></i>
+                                    <span>Click to edit</span>
+                                </div>
+                                } @else {
+                                <div class="sketch-preview-empty">
+                                    <i class="fa-solid fa-image"></i>
+                                    <span>Add Sketch</span>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="panel panel-treatment">
+                    <div class="panel-header treatment-header">
+                        <div class="treatment-title-row">
+                            <span class="panel-title">Treatment:</span>
+                            <span class="treatment-date">given on {{ currentDate | date:'dd MMM yyyy' }}</span>
+                        </div>
+                        <div class="treatment-toolbar">
+                            <button class="btn-toolbar" (click)="addEmptyMedication()" title="Add Medication"><i
+                                    class="fa-solid fa-plus"></i></button>
+                            <button class="btn-toolbar" (click)="removeSelectedMedication()" title="Remove Selected"><i
+                                    class="fa-solid fa-minus"></i></button>
+                            <button class="btn-toolbar" (click)="pauseMedication()" title="Pause"><i
+                                    class="fa-solid fa-pause"></i></button>
+                            <button class="btn-toolbar text-danger" (click)="clearAllMedications()" title="Clear All"><i
+                                    class="fa-solid fa-times"></i></button>
+                            <button class="btn-toolbar" (click)="copyMedications()" title="Copy"><i
+                                    class="fa-solid fa-copy"></i></button>
+                            <button class="btn-toolbar" (click)="toggleSelectAllMedications()" title="Select All"><i
+                                    class="fa-solid fa-check-square"></i></button>
+                            <button class="btn-toolbar" (click)="undoMedicationChange()" title="Undo"><i
+                                    class="fa-solid fa-undo"></i></button>
+                        </div>
+                        <div class="treatment-checkboxes">
+                            <label class="checkbox-label"><input type="checkbox" [(ngModel)]="liverDisease"
+                                    [ngModelOptions]="{standalone: true}" (change)="onLiverDiseaseChange()" /> Liver
+                                disease</label>
+                            <label class="checkbox-label"><input type="checkbox" [(ngModel)]="renalDisease"
+                                    [ngModelOptions]="{standalone: true}" (change)="onRenalDiseaseChange()" /> Renal
+                                disease</label>
+                            <!-- <button class="btn-sm-outline" (click)="openLargerTreatmentView()">Larger view</button> -->
+                        </div>
+                    </div>
+                    <div class="panel-content treatment-content">
+                        <table class="treatment-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-num"></th>
+                                    <th class="col-drug">Drug Name</th>
+                                    <th class="col-dosage">Dosage</th>
+                                    <th class="col-frequency">Frequency</th>
+                                    <th class="col-duration">Duration</th>
+                                    <th class="col-instructions">Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (med of medicationItems; track med.id; let i = $index) {
+                                <tr [class.row-ai]="med.source === 'ai'"
+                                    [class.row-template]="med.source === 'template'"
+                                    [class.row-selected]="selectedMedicationIndex === i"
+                                    (click)="selectMedicationRow(i, $event)">
+                                    <td class="col-num">
+                                        <input type="checkbox" [checked]="selectedMedicationIndices.includes(i)"
+                                            (change)="toggleMedicationSelection(i, $event)"
+                                            (click)="$event.stopPropagation()" class="med-checkbox" />
+                                    </td>
+                                    <td class="col-drug">
+                                        <div class="autocomplete-container">
+                                            <input type="text" [value]="med.name" (input)="onDrugSearch(i, $event)"
+                                                (focus)="onDrugInputFocus(i)" (click)="$event.stopPropagation()"
+                                                placeholder="Drug name" class="drug-input" />
+                                            @if (activeDropdown === 'drug' && activeMedicationIndex === i &&
+                                            drugSuggestions.length > 0) {
+                                            <div class="dropdown-menu drug-dropdown">
+                                                @for (item of drugSuggestions; track item.id) {
+                                                <div class="dropdown-item"
+                                                    (click)="selectDrug(i, item); $event.stopPropagation()">
+                                                    <span class="drug-name">{{ item.displayText }}</span>
+                                                    @if (item.subText) {
+                                                    <span class="drug-strength">{{ item.subText }}</span>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="col-dosage">
+                                        <input type="text" [value]="med.dosage || ''"
+                                            (input)="updateMedicationField(i, 'dosage', $any($event.target).value)"
+                                            (click)="$event.stopPropagation()" placeholder="e.g., 500mg"
+                                            class="med-field-input" />
+                                    </td>
+                                    <td class="col-frequency">
+                                        <input type="text" [value]="med.frequency || ''"
+                                            (input)="updateMedicationField(i, 'frequency', $any($event.target).value)"
+                                            (click)="$event.stopPropagation()" placeholder="e.g., 1+0+1"
+                                            class="med-field-input" />
+                                    </td>
+                                    <td class="col-duration">
+                                        <input type="text" [value]="med.duration || ''"
+                                            (input)="updateMedicationField(i, 'duration', $any($event.target).value)"
+                                            (click)="$event.stopPropagation()" placeholder="e.g., 7 days"
+                                            class="med-field-input" />
+                                    </td>
+                                    <td class="col-instructions">
+                                        <input type="text" [value]="med.instructions || ''"
+                                            (input)="updateMedicationField(i, 'instructions', $any($event.target).value)"
+                                            (click)="$event.stopPropagation()" placeholder="e.g., After meal"
+                                            class="med-field-input" />
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM ROW ===== -->
+        <div class="bottom-section">
+            <!-- First Row: Advice, Further Advice, Referral/Comments -->
+            <div class="bottom-row-grid">
+                <!-- Advice Panel -->
+                <div class="panel panel-advice" [class.panel-expanded]="isAdviceExpanded">
+                    <div class="panel-header">
+                        <span class="panel-title">Advice:</span>
+
+                        <button class="btn-panel-icon" title="Expand/Collapse" (click)="toggleAdviceExpand()">
+                            <i class="fa-solid" [class.fa-expand]="!isAdviceExpanded"
+                                [class.fa-compress]="isAdviceExpanded"></i>
+                        </button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="autocomplete-container">
+                            <input type="text" [value]="adviceSearch" (input)="onAdviceSearch($event)"
+                                (keydown.enter)="addAdviceManual()" placeholder="Type advice..." class="advice-input" />
+                            @if (activeDropdown === 'advice' && adviceSuggestions.length > 0) {
+                            <div class="dropdown-menu">
+                                @for (item of adviceSuggestions; track item.id) {
+                                <div class="dropdown-item" (click)="selectAdvice(item)">{{ item.displayText }}</div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <div class="advice-list">
+                            @for (item of adviceItems; track item.id; let i = $index) {
+                            <div class="advice-item" [class.item-ai]="item.source === 'ai'"
+                                [class.item-template]="item.source === 'template'"
+                                [class.item-modified]="item.isModified">
+                                <span class="source-badge" [class.badge-ai]="item.source === 'ai'"
+                                    [class.badge-db]="item.source === 'template'"
+                                    [class.badge-new]="item.source === 'manual'">{{ getSourceLabel(item.source)
+                                    }}</span>
+                                <input type="text" class="item-text-input" [value]="item.text"
+                                    (input)="updateAdvice(i, $any($event.target).value)" />
+                                <button class="btn-save-item" (click)="saveIndividualAdvice(i)"
+                                    [disabled]="item.isSaving || (!needsSave(item) && !item.isModified)"
+                                    [title]="getSaveButtonLabel(item)">
+                                    @if (item.isSaving) {
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                    } @else {
+                                    <i class="fa-solid fa-save"></i>
+                                    }
+                                </button>
+                                <button class="btn-remove-item" (click)="removeAdvice(i)">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Further Advice Panel -->
+                <div class="panel panel-further-advice">
+                    <div class="panel-header">
+                        <span class="panel-title">Further advice:</span>
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="4" [(ngModel)]="furtherAdvice" [ngModelOptions]="{standalone: true}"
+                            placeholder="Enter further advice..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Referral/Comments Panel -->
+                <div class="panel panel-referral">
+                    <div class="panel-header">
+                        <span class="panel-title">Referral/Comments:</span>
+                        <button class="btn-refer" (click)="showReferredDoctor()">Refer to</button>
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="4" formControlName="referralComments"
+                            placeholder="Enter referral comments..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row: Notes, Diagnosis, Follow-up -->
+            <div class="bottom-row-grid">
+                <!-- Notes Panel -->
+                <div class="panel panel-notes">
+                    <div class="panel-header">
+                        <span class="panel-title">Notes:</span>
+                    </div>
+                    <div class="panel-content">
+                        <textarea rows="4" [(ngModel)]="notes" [ngModelOptions]="{standalone: true}"
+                            placeholder="Enter notes..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Diagnosis Panel -->
+                <div class="panel panel-diagnosis">
+                    <div class="panel-header">
+                        <span class="panel-title">Diagnosis:</span>
+                        <button class="btn-panel-icon" title="Add"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="autocomplete-container">
+                            <input type="text" [value]="diseaseSearch" (input)="onDiseaseSearch($event)"
+                                placeholder="Search diagnosis..." class="diagnosis-input" />
+                            @if (activeDropdown === 'disease' && diseaseSuggestions.length > 0) {
+                            <div class="dropdown-menu">
+                                @for (item of diseaseSuggestions; track item.id) {
+                                <div class="dropdown-item" (click)="selectDiseaseTemplate(item)">
+                                    <span>{{ item.displayText }}</span>
+                                    @if (item.subText) {
+                                    <span class="item-sub">{{ item.subText }}</span>
+                                    }
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+                        <div class="diagnosis-display">
+                            @for (disease of selectedDiseases; track disease.id) {
+                            <div class="diagnosis-item">
+                                <span class="diagnosis-text">{{ disease.name }}</span>
+                                <span class="diagnosis-note">(due to ?)</span>
+                                <button class="btn-remove-item" (click)="removeDisease(disease.id)"><i
+                                        class="fa-solid fa-times"></i></button>
+                            </div>
+                            }
+                            @if (selectedDiseases.length === 0 && prescriptionForm.get('diagnosis')?.value) {
+                            <div class="diagnosis-item">
+                                <span class="diagnosis-text">{{ prescriptionForm.get('diagnosis')?.value }}</span>
+                            </div>
+                            }
+                        </div>
+                        <label class="diagnosis-same-check">
+                            <input type="checkbox" [(ngModel)]="diagnosisSameAsLast"
+                                [ngModelOptions]="{standalone: true}" />
+                            Diagnosis same as in last visit
+                        </label>
+                        <!-- ICD Codes from AI (Read-only) -->
+                        @if (icdCodes) {
+                        <div class="icd-codes-section">
+                            <div class="icd-codes-header">
+                                <i class="fa-solid fa-code"></i>
+                                <span class="icd-label">ICD-10 Codes:</span>
+                                <span class="source-badge badge-ai">AI</span>
+                            </div>
+                            <div class="icd-codes-display">
+                                @for (code of icdCodes.split(','); track code) {
+                                <span class="icd-code-tag">{{ code.trim() }}</span>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Follow-up Panel -->
+                <div class="panel panel-followup">
+                    <div class="panel-header">
+                        <span class="panel-title">Follow-up:</span>
+                    </div>
+                    <div class="panel-content">
+                        <div class="followup-options">
+                            <label class="radio-option">
+                                <input type="radio" name="followupType" value="on" [(ngModel)]="followUpType"
+                                    [ngModelOptions]="{standalone: true}" />
+                                <span>on</span>
+                                <input type="date" formControlName="followUpDate" class="followup-date" />
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="followupType" value="after" [(ngModel)]="followUpType"
+                                    [ngModelOptions]="{standalone: true}" />
+                                <span>after</span>
+                                <input type="text" [(ngModel)]="followUpAfter" [ngModelOptions]="{standalone: true}"
+                                    placeholder="e.g., 2 weeks" class="followup-after" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Import Template Modal -->
+@if (showImportTemplateModal) {
+<div class="modal-overlay" (click)="closeImportTemplateModal()">
+    <div class="modal modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <i class="fa-solid fa-file-import"></i>
+            <h3>Import Template</h3>
+            <button class="modal-close" (click)="closeImportTemplateModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Search Templates</label>
+                <input type="text" [(ngModel)]="importTemplateSearch" [ngModelOptions]="{standalone: true}"
+                    (input)="filterTemplates()" placeholder="Search by name or shortcut..."
+                    class="template-search-input" />
+            </div>
+            <div class="template-list">
+                @if (filteredTemplates.length === 0) {
+                <div class="empty-template-list">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <p>No templates found</p>
+                </div>
+                } @else {
+                @for (template of filteredTemplates; track template.id) {
+                <div class="template-item" (click)="applyTemplate(template)">
+                    <div class="template-icon">
+                        @if (template.templateType === 'symptom') {
+                        <i class="fa-solid fa-stethoscope"></i>
+                        } @else {
+                        <i class="fa-solid fa-disease"></i>
+                        }
+                    </div>
+                    <div class="template-info">
+                        <span class="template-name">{{ template.name }}</span>
+                        <span class="template-meta">
+                            <span class="template-type">{{ template.templateType === 'symptom' ? 'Symptom' : 'Disease'
+                                }}</span>
+                            @if (template.shortcut) {
+                            <span class="template-shortcut">{{ template.shortcut }}</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="template-action">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeImportTemplateModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Save Template Modal -->
+@if (showSaveTemplateModal) {
+<div class="modal-overlay" (click)="closeSaveTemplateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <i class="fa-solid fa-save"></i>
+            <h3>Save as Template</h3>
+            <button class="modal-close" (click)="closeSaveTemplateModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Template Type</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="templateType" value="symptom" [(ngModel)]="saveTemplateType" />
+                        <span>Symptom Template</span>
+                        <small>Includes all sections</small>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="templateType" value="disease" [(ngModel)]="saveTemplateType" />
+                        <span>Disease Template</span>
+                        <small>Includes medications only</small>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Template Name <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="templateName" placeholder="e.g., Common Cold Treatment" />
+            </div>
+            <div class="form-group">
+                <label>Shortcut <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="templateShortcut" placeholder="e.g., cc01" />
+                <small class="hint">Use shortcut to quickly apply this template</small>
+            </div>
+            @if (saveTemplateScope === 'global') {
+            <div class="template-summary">
+                <h4>Template will include:</h4>
+                <ul>
+                    @if (saveTemplateType === 'symptom') {
+                    <li><i class="fa-solid fa-check"></i> {{ chiefComplaintItems.length }} Chief Complaints</li>
+                    <li><i class="fa-solid fa-check"></i> {{ examinationItems.length }} Examinations</li>
+                    <li><i class="fa-solid fa-check"></i> {{ adviceItems.length }} Advice Items</li>
+                    <li><i class="fa-solid fa-check"></i> {{ investigationItems.length }} Investigations</li>
+                    }
+                    <li><i class="fa-solid fa-check"></i> {{ medicationItems.length }} Medications</li>
+                </ul>
+            </div>
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeSaveTemplateModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="saveAsTemplate()">
+                <i class="fa-solid fa-save"></i> Save Template
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Confirm Dialog -->
+@if (showConfirmDialog) {
+<div class="modal-overlay" (click)="cancelConfirmDialog()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <i class="fa-solid fa-exclamation-triangle warning-icon"></i>
+            <h3>Confirm</h3>
+        </div>
+        <div class="modal-body">
+            <p>{{ confirmDialogMessage }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" (click)="cancelConfirmDialog()">Cancel</button>
+            <button class="btn btn-danger" (click)="confirmAction()">
+                <i class="fa-solid fa-check"></i> Confirm
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- PDF Preview Modal -->
+@if (showPdfPreview && pdfData) {
+<div class="pdf-modal-overlay" (click)="closePdfPreview()">
+    <div class="pdf-modal-container" (click)="$event.stopPropagation()">
+        <app-pdf-export [pdfData]="pdfData" [showControls]="true" (closePreview)="closePdfPreview()">
+        </app-pdf-export>
+        <button class="pdf-close-btn" (click)="closePdfPreview()">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    </div>
+</div>
+}
+
+<!-- Sketch Editor Modal -->
+@if (showSketchModal) {
+<div class="modal-overlay sketch-modal-overlay" (click)="closeSketchModal()">
+    <div class="sketch-modal" (click)="$event.stopPropagation()">
+        <div class="sketch-modal-header">
+            <h3><i class="fa-solid fa-pencil"></i> Sketch Editor</h3>
+            <div class="sketch-modal-actions">
+                <button class="btn btn-sm btn-outline" (click)="saveSketchToForm()">
+                    <i class="fa-solid fa-save"></i> Save
+                </button>
+                <button class="btn btn-sm btn-outline" (click)="closeSketchModal()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="sketch-modal-toolbar">
+            <div class="toolbar-group">
+                <button class="btn-sketch-tool" (click)="addSketchImage()" title="Add Image">
+                    <i class="fa-solid fa-image"></i>
+                </button>
+                <select class="sketch-template-select" [(ngModel)]="selectedSketch"
+                    [ngModelOptions]="{standalone: true}" (change)="onSketchTemplateChange()">
+                    <option value="">Select template...</option>
+                    <option value="body-front">Body Front</option>
+                    <option value="body-back">Body Back</option>
+                    <option value="head">Head</option>
+                    <option value="hand">Hand</option>
+                    <option value="foot">Foot</option>
+                    <option value="teeth">Teeth</option>
+                    <option value="eye">Eye</option>
+                    <option value="custom">Upload Custom...</option>
+                </select>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group drawing-tools">
+                <button class="btn-sketch-tool" [class.active]="sketchTool === 'pen'" (click)="setSketchTool('pen')"
+                    title="Pen">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn-sketch-tool" [class.active]="sketchTool === 'eraser'"
+                    (click)="setSketchTool('eraser')" title="Eraser">
+                    <i class="fa-solid fa-eraser"></i>
+                </button>
+                <button class="btn-sketch-tool" [class.active]="sketchTool === 'circle'"
+                    (click)="setSketchTool('circle')" title="Circle">
+                    <i class="fa-regular fa-circle"></i>
+                </button>
+                <button class="btn-sketch-tool" [class.active]="sketchTool === 'arrow'" (click)="setSketchTool('arrow')"
+                    title="Arrow">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button class="btn-sketch-tool" [class.active]="sketchTool === 'text'" (click)="setSketchTool('text')"
+                    title="Text">
+                    <i class="fa-solid fa-font"></i>
+                </button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <input type="color" [(ngModel)]="sketchColor" [ngModelOptions]="{standalone: true}" class="color-picker"
+                    title="Color" />
+                <select [(ngModel)]="sketchLineWidth" [ngModelOptions]="{standalone: true}" class="line-width-select"
+                    title="Line Width">
+                    <option [value]="1">1px</option>
+                    <option [value]="2">2px</option>
+                    <option [value]="3">3px</option>
+                    <option [value]="5">5px</option>
+                    <option [value]="8">8px</option>
+                </select>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <button class="btn-sketch-tool" (click)="zoomOutSketch()" title="Zoom Out">
+                    <i class="fa-solid fa-search-minus"></i>
+                </button>
+                <span class="zoom-level">{{ (sketchZoom * 100) | number:'1.0-0' }}%</span>
+                <button class="btn-sketch-tool" (click)="zoomInSketch()" title="Zoom In">
+                    <i class="fa-solid fa-search-plus"></i>
+                </button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <button class="btn-sketch-tool" (click)="undoSketch()" title="Undo">
+                    <i class="fa-solid fa-undo"></i>
+                </button>
+                <button class="btn-sketch-tool text-danger" (click)="clearSketch()" title="Clear All">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+                <button class="btn-sketch-tool" (click)="resetSketch()" title="Reset">
+                    <i class="fa-solid fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+        <div class="sketch-modal-body">
+            @if (sketchImageUrl) {
+            <div class="sketch-canvas-wrapper" [style.transform]="'scale(' + sketchZoom + ')'">
+                <img [src]="sketchImageUrl" alt="Sketch" class="sketch-base-image" (load)="onSketchImageLoad($event)"
+                    #sketchBaseImage />
+                <canvas #sketchCanvas class="sketch-drawing-canvas" (mousedown)="startDrawing($event)"
+                    (mousemove)="draw($event)" (mouseup)="stopDrawing()" (mouseleave)="stopDrawing()"></canvas>
+            </div>
+            } @else {
+            <div class="sketch-empty-state" (click)="addSketchImage()">
+                <i class="fa-solid fa-image"></i>
+                <h4>No Image Selected</h4>
+                <p>Click to upload an image or select a template from the dropdown above</p>
+                <button class="btn btn-primary">
+                    <i class="fa-solid fa-upload"></i> Upload Image
+                </button>
+            </div>
+            }
+        </div>
+        <div class="sketch-modal-footer">
+            <span class="sketch-info">@if (sketchImageUrl) { Image loaded } @else { No image }</span>
+            <div class="sketch-footer-actions">
+                <button class="btn btn-outline" (click)="closeSketchModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="saveSketchToForm()" [disabled]="!sketchImageUrl">
+                    <i class="fa-solid fa-check"></i> Save to Prescription
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hidden file input for sketch image upload -->
+<input type="file" #sketchFileInput accept="image/*" (change)="onSketchImageSelected($event)" style="display: none;" />
+}

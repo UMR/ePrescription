@@ -1,0 +1,493 @@
+:host {
+  --panel-pink: #fff0f5;
+  --panel-gray: #f5f5f5;
+  --panel-cream: #fffef0;
+  --header-bg: #f0f0f0;
+  --nav-bg: #e8e8e8;
+  --border-dark: #999;
+  --border-medium: #bbb;
+  --border-light: #ddd;
+  --text-dark: #333;
+  --text-medium: #555;
+  --text-light: #666;
+  --white: #fff;
+  --radius-sm: 3px;
+  --radius: 4px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  --success: #28a745;
+  --success-bg: #d4edda;
+  --primary: #0066cc;
+  --primary-hover: #0055b3;
+  --error-bg: #f8d7da;
+  --error-text: #721c24;
+  --btn-gradient: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
+  --btn-hover-gradient: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
+
+  display: block;
+  height: 100%;
+  overflow: auto;
+}
+
+/* ============== Main Container ============== */
+.clinical-bot-app {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-dark);
+  background: var(--header-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============== Top Navigation Bar ============== */
+.top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
+  border-bottom: 1px solid var(--border-dark);
+  min-height: 40px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-icon {
+  font-size: 20px;
+  color: var(--primary);
+}
+
+.app-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-subtitle {
+  font-size: 11px;
+  color: var(--text-medium);
+  font-style: italic;
+}
+
+/* ============== Main Content ============== */
+.main-content {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+/* ============== Panels ============== */
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
+  border-bottom: 1px solid var(--border-medium);
+  border-radius: var(--radius) var(--radius) 0 0;
+  min-height: 30px;
+}
+
+.panel-header-success {
+  background: linear-gradient(180deg, #d4edda 0%, #c3e6cb 100%);
+  border-bottom-color: #28a745;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-title i {
+  font-size: 12px;
+  color: var(--primary);
+}
+
+.panel-header-success .panel-title i {
+  color: var(--success);
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.panel-content {
+  padding: 10px;
+}
+
+/* ============== Input Panel ============== */
+.panel-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-input .panel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============== Clinical Note Textarea ============== */
+.clinical-note-input {
+  width: 100%;
+  flex: 1;
+  min-height: 280px;
+  padding: 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  background: var(--white);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.clinical-note-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.clinical-note-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.clinical-note-input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* ============== Language Buttons ============== */
+.btn-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--btn-gradient);
+  color: var(--text-dark);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-lang:hover:not(:disabled) {
+  background: var(--btn-hover-gradient);
+  border-color: var(--border-dark);
+}
+
+.btn-lang:active:not(:disabled) {
+  background: #d0d0d0;
+}
+
+.btn-lang:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lang-flag {
+  font-size: 12px;
+}
+
+/* ============== Icon Button ============== */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--btn-gradient);
+  color: var(--text-medium);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--btn-hover-gradient);
+  border-color: var(--border-dark);
+  color: var(--text-dark);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============== Error Banner ============== */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--error-bg);
+  border: 1px solid #f5c6cb;
+  border-radius: var(--radius-sm);
+  color: var(--error-text);
+  font-size: 12px;
+}
+
+.error-banner i {
+  font-size: 14px;
+}
+
+/* ============== Action Bar ============== */
+.action-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ============== Action Buttons ============== */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action i {
+  font-size: 12px;
+}
+
+/* Stream Button */
+.btn-stream {
+  background: linear-gradient(180deg, #fffacd 0%, #f0e68c 100%);
+  color: #856404;
+  border-color: #d4b106;
+}
+
+.btn-stream:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f0e68c 0%, #daa520 100%);
+  border-color: #b8960b;
+}
+
+/* Generate Button */
+.btn-generate {
+  background: linear-gradient(180deg, #5cb85c 0%, #449d44 100%);
+  color: var(--white);
+  border-color: #3d8b3d;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: linear-gradient(180deg, #449d44 0%, #398439 100%);
+  border-color: #357935;
+}
+
+/* ============== Response Panel ============== */
+.panel-response {
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--success);
+  color: var(--white);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.status-badge i {
+  font-size: 10px;
+}
+
+/* ============== Response Box ============== */
+.response-box {
+  background: #f8f9fa;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.response-text {
+  margin: 0;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============== Redirect Notice ============== */
+.redirect-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--success-bg);
+  border: 1px solid #c3e6cb;
+  border-radius: var(--radius-sm);
+  color: #155724;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.redirect-notice i {
+  font-size: 12px;
+  color: var(--success);
+}
+
+/* ============== Font Awesome Spin ============== */
+.fa-spin {
+  animation: fa-spin 1s linear infinite;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============== Scrollbar Styling ============== */
+.clinical-note-input::-webkit-scrollbar,
+.response-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.clinical-note-input::-webkit-scrollbar-track,
+.response-box::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.clinical-note-input::-webkit-scrollbar-thumb,
+.response-box::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+
+.clinical-note-input::-webkit-scrollbar-thumb:hover,
+.response-box::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* ============== Responsive ============== */
+@media (max-width: 768px) {
+  .top-nav-bar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .nav-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .panel-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .clinical-note-input {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 8px;
+  }
+
+  .app-title {
+    font-size: 12px;
+  }
+
+  .nav-subtitle {
+    font-size: 10px;
+  }
+
+  .btn-lang {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .clinical-note-input {
+    min-height: 180px;
+    font-size: 11px;
+  }
+
+  .response-box {
+    max-height: 200px;
+  }
+}

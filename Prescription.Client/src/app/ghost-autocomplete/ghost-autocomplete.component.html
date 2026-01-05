@@ -1,0 +1,15 @@
+<div class="ghost-autocomplete-container">
+    <div class="input-wrapper">
+        <input *ngIf="!isTextarea()" [ngModel]="inputValue()" (ngModelChange)="onInputChange($event)"
+            (keydown)="onKeyDown($event)" (blur)="onBlur()" [placeholder]="placeholder()" [disabled]="isDisabled()"
+            [class]="inputClass()" class="ghost-input" type="text" autocomplete="off" />
+
+        <textarea *ngIf="isTextarea()" [ngModel]="inputValue()" (ngModelChange)="onInputChange($event)"
+            (keydown)="onKeyDown($event)" (blur)="onBlur()" [placeholder]="placeholder()" [disabled]="isDisabled()"
+            [class]="inputClass()" class="ghost-input ghost-textarea"></textarea>
+
+        <div *ngIf="ghostSuggestion()" [class]="inputClass()" class="ghost-text">
+            <span class="invisible-text">{{ inputValue() }}</span>{{ ghostSuggestion() }}
+        </div>
+    </div>
+</div>

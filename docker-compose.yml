@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  prescription-db:
+    image: postgres:16-alpine
+    container_name: prescription-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: eprescription
+    ports:
+      - "5432:5432"
+    volumes:
+      - prescription-db-data:/var/lib/postgresql/data
+    networks:
+      - prescription-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Prescription API (.NET 8)
+  prescription-api:
+    build:
+      context: .
+      dockerfile: Prescription.Presentation/Dockerfile
+    container_name: prescription-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=prescription-db;Port=5432;Database=eprescription;Username=postgres;Password=123456;Include Error Detail=true
+    ports:
+      - "5000:8080"
+    depends_on:
+      prescription-db:
+        condition: service_healthy
+    networks:
+      - prescription-network
+    restart: unless-stopped
+
+  # Prescription Client (Angular)
+  prescription-client:
+    build:
+      context: ./Prescription.Client
+      dockerfile: Dockerfile
+    container_name: prescription-client
+    ports:
+      - "4200:80"
+    depends_on:
+      - prescription-api
+    networks:
+      - prescription-network
+    restart: unless-stopped
+
+networks:
+  prescription-network:
+    driver: bridge
+
+volumes:
+  prescription-db-data:
