@@ -1,15 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ClinicalChatService } from '../services/clinical-chat.service';
 import { PrescriptionService } from '../services/prescription.service';
+import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
+import { SpeechRecordingState, SpeechError } from '../models/speech-to-text.model';
 
 @Component({
   selector: 'app-clinical-bot',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, SpeechRecorderComponent],
   templateUrl: './clinical-bot.component.html',
   styleUrl: './clinical-bot.component.css'
 })
@@ -19,6 +20,11 @@ export class ClinicalBotComponent implements OnInit, OnDestroy {
   isStreaming: boolean = false;
   isProcessing: boolean = false;
   errorMessage: string = '';
+  isRecording: boolean = false;
+
+  private finalizedText = '';
+  pendingText = '';
+
   private destroy$ = new Subject<void>();
   sampleNote = `Patient: John Doe, 45-year-old male
 Chief Complaint: Persistent cough and fever for 5 days
@@ -112,12 +118,6 @@ Plan:
 
   loadHindiSample() {
     this.clinicalNote = this.sampleNoteHindi;
-  }
-
-  clearNote() {
-    this.clinicalNote = '';
-    this.aiResponse = '';
-    this.errorMessage = '';
   }
 
   streamSummary() {
@@ -259,5 +259,96 @@ Plan:
       console.error('Failed to parse AI response');
       this.errorMessage = 'Failed to parse AI response. Please check the format. See console for details.';
     }
+  }
+
+  // ============== Speech-to-Text Methods ==============
+
+
+  /**
+   * Handle final transcribed text from speech recorder (when recording stops)
+   */
+  onSpeechTranscription(_text: string): void {
+    console.log('Final transcription received:', _text);
+    // This is called when recording stops with the complete formatted text
+    // We don't need to append here since real-time streaming already did it
+    // Just clear the pending text indicator
+    this.pendingText = '';
+  }
+
+  /**
+   * Handle real-time text streaming (for direct textarea updates)
+   */
+  onRealtimeText(data: { text: string; isFinal: boolean }): void {
+    console.log('Realtime text data received ------------> :', data);
+    if (!data.text) return;
+
+    if (data.isFinal) {
+      // Finalized text - append to clinical note permanently
+      if (this.finalizedText && !this.finalizedText.endsWith(' ') && !this.finalizedText.endsWith('\n')) {
+        this.finalizedText += ' ';
+      }
+      this.finalizedText += data.text;
+      this.pendingText = '';
+
+      // Update the clinical note with finalized text only
+      this.clinicalNote = this.finalizedText;
+    } else {
+      // Pending text - show as temporary (will be replaced)
+      this.pendingText = data.text;
+
+      // Update clinical note to show finalized + pending
+      // this.clinicalNote = this.finalizedText + (this.finalizedText ? ' ' : '') + this.pendingText;
+      const separator = this.finalizedText && !this.finalizedText.endsWith(' ') && !this.finalizedText.endsWith('\n') ? ' ' : '';
+      this.clinicalNote = this.finalizedText + separator + this.pendingText;
+    }
+  }
+
+  /**
+   * Handle segment complete (speaker pause detected)
+   */
+  onSegmentComplete(_text: string): void {
+    // A segment is complete - could add a line break for conversation separation
+    if (this.finalizedText && !this.finalizedText.endsWith('\n')) {
+      this.finalizedText += '\n';
+      this.clinicalNote = this.finalizedText;
+    }
+  }
+
+  /**
+   * Handle recording state changes
+   */
+  onRecordingStateChange(state: SpeechRecordingState): void {
+    this.isRecording = state === 'recording';
+
+    // Reset tracking when starting a new recording
+    // if (state === 'recording' && !this.finalizedText) {
+    if (state === 'recording') {
+      this.finalizedText = this.clinicalNote || ''; // Preserve existing text
+      this.pendingText = '';
+    }
+
+    // Clear pending when not recording
+    if (state === 'idle' || state === 'error') {
+      this.pendingText = '';
+    }
+  }
+
+  /**
+   * Handle speech recognition errors
+   */
+  onSpeechError(error: SpeechError): void {
+    this.errorMessage = error.message;
+    this.pendingText = '';
+  }
+
+  /**
+   * Override clearNote to also reset speech tracking
+   */
+  clearNote() {
+    this.clinicalNote = '';
+    this.aiResponse = '';
+    this.errorMessage = '';
+    this.finalizedText = '';
+    this.pendingText = '';
   }
 }

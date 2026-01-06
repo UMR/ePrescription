@@ -3766,3 +3766,34 @@ input.loading {
 .treatment-table tbody tr:has(.dose-input:focus) {
   background: var(--info-light);
 }
+
+/* ============== Speech-to-Text Recording Styles ============== */
+
+/* Notes panel header with speech recorder */
+.panel-notes .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Textarea recording active state */
+.panel-notes textarea.recording-active {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+  animation: recording-glow 2s ease-in-out infinite;
+}
+
+@keyframes recording-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.3);
+  }
+}
+
+/* Speech recorder positioning within panel header */
+.panel-notes .panel-header app-speech-recorder {
+  margin-left: auto;
+}

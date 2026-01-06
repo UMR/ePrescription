@@ -1,0 +1,68 @@
+<div class="speech-recorder" [class.recording]="isRecording()" [class.paused]="isPaused()" [class.error]="isError()">
+    <!-- Main Recording Button -->
+    <button
+        type="button"
+        class="speech-btn"
+        [class.btn-idle]="isIdle()"
+        [class.btn-requesting]="isRequesting()"
+        [class.btn-recording]="isRecording()"
+        [class.btn-paused]="isPaused()"
+        [class.btn-stopping]="isStopping()"
+        [class.btn-error]="isError()"
+        [disabled]="disabled() || isStopping()"
+        [attr.aria-label]="buttonAriaLabel()"
+        [title]="buttonTooltip()"
+        (click)="onButtonClick()"
+        (keydown)="onKeydown($event)">
+
+        <!-- Icon based on state -->
+        @switch (recordingState()) {
+            @case ('idle') {
+                <i class="fa-solid fa-microphone"></i>
+            }
+            @case ('requesting_permission') {
+                <i class="fa-solid fa-microphone pulse"></i>
+            }
+            @case ('recording') {
+                <i class="fa-solid fa-microphone"></i>
+                <span class="recording-indicator"></span>
+            }
+            @case ('paused') {
+                <i class="fa-solid fa-pause"></i>
+            }
+            @case ('stopping') {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            }
+            @case ('error') {
+                <i class="fa-solid fa-microphone-slash"></i>
+            }
+        }
+    </button>
+
+    <!-- Stop Button (visible when recording or paused) -->
+    @if (isActive()) {
+        <button
+            type="button"
+            class="speech-btn-stop"
+            aria-label="Stop recording"
+            title="Stop recording"
+            (click)="onStopClick($event)">
+            <i class="fa-solid fa-stop"></i>
+        </button>
+    }
+
+    <!-- Live Preview (optional) -->
+    @if (showLivePreview() && isRecording() && liveTranscription()) {
+        <div class="live-preview" aria-live="polite">
+            <span class="live-indicator"></span>
+            <span class="live-text">{{ liveTranscription() }}</span>
+        </div>
+    }
+
+    <!-- Error Message Tooltip -->
+    @if (isError() && currentError()) {
+        <div class="error-tooltip" role="alert">
+            {{ currentError()?.message }}
+        </div>
+    }
+</div>

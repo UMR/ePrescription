@@ -6,7 +6,9 @@
       <span class="app-title">AI Clinical Note Processor</span>
     </div>
     <div class="nav-right">
-      <span class="nav-subtitle">Transform clinical notes into structured prescription data</span>
+      <span class="nav-subtitle"
+        >Transform clinical notes into structured prescription data</span
+      >
     </div>
   </header>
 
@@ -15,25 +17,68 @@
     <!-- Input Panel -->
     <div class="panel panel-input">
       <div class="panel-header">
-        <span class="panel-title"><i class="fa-solid fa-file-medical"></i> Clinical Note Input (Multi-Language)</span>
+        <div class="panel-title-bar">
+          <span class="panel-title"
+            ><i class="fa-solid fa-file-medical"></i> Clinical Note Input
+            (Multi-Language)</span
+          >
+          <app-speech-recorder
+            [disabled]="isStreaming || isProcessing"
+            [showLivePreview]="true"
+            (transcriptionChange)="onSpeechTranscription($event)"
+            (realtimeText)="onRealtimeText($event)"
+            (segmentComplete)="onSegmentComplete($event)"
+            (recordingStateChange)="onRecordingStateChange($event)"
+            (error)="onSpeechError($event)"
+          >
+          </app-speech-recorder>
+        </div>
+
         <div class="panel-actions">
-          <button type="button" class="btn-lang" (click)="loadSampleNote()" [disabled]="isStreaming || isProcessing">
-            <span class="lang-flag">🇬🇧</span> EN
-          </button>
-          <button type="button" class="btn-lang" (click)="loadBengaliSample()" [disabled]="isStreaming || isProcessing">
-            <span class="lang-flag">🇧🇩</span> বাং
-          </button>
-          <button type="button" class="btn-lang" (click)="loadHindiSample()" [disabled]="isStreaming || isProcessing">
-            <span class="lang-flag">🇮🇳</span> हि
-          </button>
-          <button type="button" class="btn-icon" (click)="clearNote()" [disabled]="isStreaming || isProcessing"
-            title="Clear">
-            <i class="fa-solid fa-eraser"></i>
-          </button>
+            <button
+              type="button"
+              class="btn-lang"
+              (click)="loadSampleNote()"
+              [disabled]="isStreaming || isProcessing"
+            >
+              <span class="lang-flag">🇬🇧</span> EN
+            </button>
+            <button
+              type="button"
+              class="btn-lang"
+              (click)="loadBengaliSample()"
+              [disabled]="isStreaming || isProcessing"
+            >
+              <span class="lang-flag">🇧🇩</span> বাং
+            </button>
+            <button
+              type="button"
+              class="btn-lang"
+              (click)="loadHindiSample()"
+              [disabled]="isStreaming || isProcessing"
+            >
+              <span class="lang-flag">🇮🇳</span> हि
+            </button>
+            <button
+              type="button"
+              class="btn-icon"
+              (click)="clearNote()"
+              [disabled]="isStreaming || isProcessing"
+              title="Clear"
+            >
+              <i class="fa-solid fa-eraser"></i>
+            </button>
         </div>
       </div>
       <div class="panel-content">
-        <textarea class="clinical-note-input" [(ngModel)]="clinicalNote" rows="14" placeholder="Paste your clinical note here...
+        <!-- Clinical Note Input with pending text indicator -->
+        <div class="textarea-wrapper" [class.has-pending]="pendingText">
+          <textarea
+            class="clinical-note-input"
+            [(ngModel)]="clinicalNote"
+            rows="14"
+            [class.recording-active]="isRecording"
+            placeholder="Paste your clinical note here or click the microphone to dictate...
 
 Example format:
 Patient: John Doe, 45-year-old male
@@ -42,8 +87,22 @@ Chief Complaint: Persistent cough and fever for 3 days
 History: Patient reports dry cough, fever up to 101°F
 Physical Exam: BP 120/80, Pulse 88/min, Temp 100.4°F
 Diagnosis: Upper Respiratory Tract Infection
-Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days" [disabled]="isStreaming || isProcessing">
-        </textarea>
+Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
+            [disabled]="isStreaming || isProcessing"
+          >
+          </textarea>
+
+          <!-- Pending text indicator overlay -->
+          @if (isRecording && pendingText) {
+          <div class="pending-text-indicator">
+            <span class="pending-label">
+              <i class="fa-solid fa-circle pending-dot"></i>
+              Listening...
+            </span>
+            <span class="pending-preview">{{ pendingText }}</span>
+          </div>
+          }
+        </div>
 
         @if (errorMessage) {
         <div class="error-banner">
@@ -53,15 +112,26 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days" [disabled]="isStreaming || i
         }
 
         <div class="action-bar">
-          <button type="button" class="btn-action btn-stream" (click)="streamSummary()"
-            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()">
+          <button
+            type="button"
+            class="btn-action btn-stream"
+            (click)="streamSummary()"
+            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()"
+          >
             <i class="fa-solid fa-bolt" [class.fa-spin]="isStreaming"></i>
-            {{ isStreaming ? 'Streaming...' : 'Stream Process' }}
+            {{ isStreaming ? "Streaming..." : "Stream Process" }}
           </button>
-          <button type="button" class="btn-action btn-generate" (click)="getCompleteSummary()"
-            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()">
-            <i class="fa-solid fa-wand-magic-sparkles" [class.fa-spin]="isProcessing"></i>
-            {{ isProcessing ? 'Processing...' : 'Generate Prescription' }}
+          <button
+            type="button"
+            class="btn-action btn-generate"
+            (click)="getCompleteSummary()"
+            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()"
+          >
+            <i
+              class="fa-solid fa-wand-magic-sparkles"
+              [class.fa-spin]="isProcessing"
+            ></i>
+            {{ isProcessing ? "Processing..." : "Generate Prescription" }}
           </button>
         </div>
       </div>
@@ -71,7 +141,9 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days" [disabled]="isStreaming || i
     @if (aiResponse) {
     <div class="panel panel-response">
       <div class="panel-header panel-header-success">
-        <span class="panel-title"><i class="fa-solid fa-sparkles"></i> AI Analysis Result</span>
+        <span class="panel-title"
+          ><i class="fa-solid fa-sparkles"></i> AI Analysis Result</span
+        >
         <span class="status-badge">
           <i class="fa-solid fa-check-circle"></i> Complete
         </span>
