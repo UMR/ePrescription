@@ -328,9 +328,6 @@ export class SpeechToTextService {
     // Show current transcription for popover (accumulated + pending)
     const currentTranscription = this.accumulatedText + pendingText;
     this._transcription.set(this.formatTranscription(currentTranscription));
-
-    console.log('[SONIOX] Final text:', finalText);
-    console.log('[SONIOX] Pending text:', pendingText);
   }
 
   /**

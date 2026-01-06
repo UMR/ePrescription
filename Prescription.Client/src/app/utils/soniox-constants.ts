@@ -4,11 +4,6 @@ export const SONIOX_MEDICAL_CONTEXT: Context = {
   general: [
     { key: 'domain', value: 'Healthcare' },
     { key: 'interaction', value: 'Doctor-Patient-Caregiver Consultation' },
-    { key: 'setting', value: 'Clinical' },
-    {
-      key: 'participants',
-      value: 'healthcare_professional, patient, caregiver',
-    },
     { key: 'purpose', value: 'clinical_assessment_diagnosis_and_treatment' },
     { key: 'output_usage', value: 'clinical_documentation' },
   ],
@@ -47,4 +42,4 @@ preservation are required.`,
 };
 
 
-export const SONIOX_AI_MODEL = 'stt-rt-v3-preview';
+export const SONIOX_AI_MODEL = 'stt-rt-v3';
