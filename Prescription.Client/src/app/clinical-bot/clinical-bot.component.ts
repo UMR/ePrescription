@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ClinicalChatService } from '../services/clinical-chat.service';
 import { PrescriptionService } from '../services/prescription.service';
 import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
-import { SpeechRecordingState, SpeechError } from '../models/speech-to-text.model';
+import { SpeechRecordingState, SpeechError, RealtimeTextData, SegmentCompleteData } from '../models/speech-to-text.model';
 
 @Component({
   selector: 'app-clinical-bot',
@@ -14,18 +14,35 @@ import { SpeechRecordingState, SpeechError } from '../models/speech-to-text.mode
   templateUrl: './clinical-bot.component.html',
   styleUrl: './clinical-bot.component.css'
 })
-export class ClinicalBotComponent implements OnInit, OnDestroy {
-  clinicalNote: string = '';
-  aiResponse: string = '';
-  isStreaming: boolean = false;
-  isProcessing: boolean = false;
-  errorMessage: string = '';
-  isRecording: boolean = false;
+export class ClinicalBotComponent implements OnDestroy {
+  private clinicalChatService = inject(ClinicalChatService);
+  private prescriptionService = inject(PrescriptionService);
+  router = inject(Router);
 
-  private finalizedText = '';
-  pendingText = '';
+  // Core state signals
+  clinicalNote = signal<string>('');
+  aiResponse = signal<string>('');
+  isStreaming = signal<boolean>(false);
+  isProcessing = signal<boolean>(false);
+  errorMessage = signal<string>('');
+  isRecording = signal<boolean>(false);
+
+  // Speech tracking signals
+  private finalizedText = signal<string>('');
+  pendingText = signal<string>('');
+
+  // Computed signals
+  canSubmit = computed(() =>
+    this.clinicalNote().trim().length > 0 &&
+    !this.isStreaming() &&
+    !this.isProcessing()
+  );
+
+  hasResponse = computed(() => this.aiResponse().length > 0);
+  hasError = computed(() => this.errorMessage().length > 0);
 
   private destroy$ = new Subject<void>();
+
   sampleNote = `Patient: John Doe, 45-year-old male
 Chief Complaint: Persistent cough and fever for 5 days
 
@@ -93,89 +110,79 @@ Plan:
 मूल्यांकन:
 समुदाय-अधिग्रहीत निमोनिया`;
 
-  constructor(
-    private clinicalChatService: ClinicalChatService,
-    private prescriptionService: PrescriptionService,
-    public router: Router
-  ) { }
-
-  ngOnInit() {
-    // Component initialization
-  }
-
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   loadSampleNote() {
-    this.clinicalNote = this.sampleNote;
+    this.clinicalNote.set(this.sampleNote);
   }
 
   loadBengaliSample() {
-    this.clinicalNote = this.sampleNoteBengali;
+    this.clinicalNote.set(this.sampleNoteBengali);
   }
 
   loadHindiSample() {
-    this.clinicalNote = this.sampleNoteHindi;
+    this.clinicalNote.set(this.sampleNoteHindi);
   }
 
   streamSummary() {
-    if (!this.clinicalNote.trim()) {
-      this.errorMessage = 'Please enter a clinical note';
+    if (!this.clinicalNote().trim()) {
+      this.errorMessage.set('Please enter a clinical note');
       return;
     }
 
-    this.isStreaming = true;
-    this.aiResponse = '';
-    this.errorMessage = '';
+    this.isStreaming.set(true);
+    this.aiResponse.set('');
+    this.errorMessage.set('');
 
     console.log('Starting stream analysis...');
 
-    this.clinicalChatService.streamClinicalNoteSummary(this.clinicalNote)
+    this.clinicalChatService.streamClinicalNoteSummary(this.clinicalNote())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (chunk) => {
           console.log('Received chunk:', chunk);
-          this.aiResponse += chunk;
+          this.aiResponse.update(current => current + chunk);
         },
         error: (error) => {
-          this.isStreaming = false;
+          this.isStreaming.set(false);
           console.error('Streaming error:', error);
-          this.errorMessage = error.message || 'Failed to process clinical note. Please ensure the API is running at http://localhost:5086';
+          this.errorMessage.set(error.message || 'Failed to process clinical note. Please ensure the API is running at http://localhost:5086');
         },
         complete: () => {
-          console.log('Stream completed. Response:', this.aiResponse);
-          this.isStreaming = false;
-          if (this.aiResponse.trim()) {
+          console.log('Stream completed. Response:', this.aiResponse());
+          this.isStreaming.set(false);
+          if (this.aiResponse().trim()) {
             this.sendToPrescription();
           } else {
-            this.errorMessage = 'No response received from AI. Please try again.';
+            this.errorMessage.set('No response received from AI. Please try again.');
           }
         }
       });
   }
 
   getCompleteSummary() {
-    if (!this.clinicalNote.trim()) {
-      this.errorMessage = 'Please enter a clinical note';
+    if (!this.clinicalNote().trim()) {
+      this.errorMessage.set('Please enter a clinical note');
       return;
     }
 
-    this.isProcessing = true;
-    this.aiResponse = '';
-    this.errorMessage = '';
+    this.isProcessing.set(true);
+    this.aiResponse.set('');
+    this.errorMessage.set('');
 
     console.log('Getting complete summary with language detection...');
 
-    this.prescriptionService.generateClinicalNote(this.clinicalNote)
+    this.prescriptionService.generateClinicalNote(this.clinicalNote())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           console.log('Received complete response with language:', response);
           console.log('Medications from AI:', response.medications);
           console.log('Number of medications:', response.medications?.length || 0);
-          this.isProcessing = false;
+          this.isProcessing.set(false);
 
           // Direct mapping from structured response
           const prescriptionData = {
@@ -211,17 +218,18 @@ Plan:
           this.router.navigate(['/prescription']);
         },
         error: (error) => {
-          this.isProcessing = false;
+          this.isProcessing.set(false);
           console.error('Complete summary error:', error);
           const errorMsg = error.error?.error || error.message || 'Failed to process clinical note';
-          this.errorMessage = errorMsg + '. Please ensure the API is running at http://localhost:5086';
+          this.errorMessage.set(errorMsg + '. Please ensure the API is running at http://localhost:5086');
         }
       });
   }
 
   private sendToPrescription() {
-    if (!this.aiResponse) return;
-    const parsedSummary = this.clinicalChatService.parseClinicalNoteSummary(this.aiResponse);
+    const response = this.aiResponse();
+    if (!response) return;
+    const parsedSummary = this.clinicalChatService.parseClinicalNoteSummary(response);
 
     if (parsedSummary) {
       console.log('Parsed summary:', parsedSummary);
@@ -257,12 +265,11 @@ Plan:
       });
     } else {
       console.error('Failed to parse AI response');
-      this.errorMessage = 'Failed to parse AI response. Please check the format. See console for details.';
+      this.errorMessage.set('Failed to parse AI response. Please check the format. See console for details.');
     }
   }
 
   // ============== Speech-to-Text Methods ==============
-
 
   /**
    * Handle final transcribed text from speech recorder (when recording stops)
@@ -270,47 +277,49 @@ Plan:
   onSpeechTranscription(_text: string): void {
     console.log('Final transcription received:', _text);
     // This is called when recording stops with the complete formatted text
-    // We don't need to append here since real-time streaming already did it
-    // Just clear the pending text indicator
-    this.pendingText = '';
+    // Clear the pending text indicator
+    this.pendingText.set('');
   }
 
   /**
    * Handle real-time text streaming (for direct textarea updates)
    */
-  onRealtimeText(data: { text: string; isFinal: boolean }): void {
+  onRealtimeText(data: RealtimeTextData): void {
     console.log('Realtime text data received ------------> :', data);
     if (!data.text) return;
 
     if (data.isFinal) {
       // Finalized text - append to clinical note permanently
-      if (this.finalizedText && !this.finalizedText.endsWith(' ') && !this.finalizedText.endsWith('\n')) {
-        this.finalizedText += ' ';
+      const currentFinalized = this.finalizedText();
+      let separator = '';
+      if (currentFinalized && !currentFinalized.endsWith(' ') && !currentFinalized.endsWith('\n')) {
+        separator = ' ';
       }
-      this.finalizedText += data.text;
-      this.pendingText = '';
+      this.finalizedText.set(currentFinalized + separator + data.text);
+      this.pendingText.set('');
 
       // Update the clinical note with finalized text only
-      this.clinicalNote = this.finalizedText;
+      this.clinicalNote.set(this.finalizedText());
     } else {
       // Pending text - show as temporary (will be replaced)
-      this.pendingText = data.text;
+      this.pendingText.set(data.text);
 
       // Update clinical note to show finalized + pending
-      // this.clinicalNote = this.finalizedText + (this.finalizedText ? ' ' : '') + this.pendingText;
-      const separator = this.finalizedText && !this.finalizedText.endsWith(' ') && !this.finalizedText.endsWith('\n') ? ' ' : '';
-      this.clinicalNote = this.finalizedText + separator + this.pendingText;
+      const currentFinalized = this.finalizedText();
+      const separator = currentFinalized && !currentFinalized.endsWith(' ') && !currentFinalized.endsWith('\n') ? ' ' : '';
+      this.clinicalNote.set(currentFinalized + separator + data.text);
     }
   }
 
   /**
    * Handle segment complete (speaker pause detected)
    */
-  onSegmentComplete(_text: string): void {
-    // A segment is complete - could add a line break for conversation separation
-    if (this.finalizedText && !this.finalizedText.endsWith('\n')) {
-      this.finalizedText += '\n';
-      this.clinicalNote = this.finalizedText;
+  onSegmentComplete(_data: SegmentCompleteData): void {
+    // A segment is complete - add a line break for conversation separation
+    const currentFinalized = this.finalizedText();
+    if (currentFinalized && !currentFinalized.endsWith('\n')) {
+      this.finalizedText.set(currentFinalized + '\n');
+      this.clinicalNote.set(this.finalizedText());
     }
   }
 
@@ -318,18 +327,17 @@ Plan:
    * Handle recording state changes
    */
   onRecordingStateChange(state: SpeechRecordingState): void {
-    this.isRecording = state === 'recording';
+    this.isRecording.set(state === 'recording');
 
     // Reset tracking when starting a new recording
-    // if (state === 'recording' && !this.finalizedText) {
     if (state === 'recording') {
-      this.finalizedText = this.clinicalNote || ''; // Preserve existing text
-      this.pendingText = '';
+      this.finalizedText.set(this.clinicalNote()); // Preserve existing text
+      this.pendingText.set('');
     }
 
     // Clear pending when not recording
     if (state === 'idle' || state === 'error') {
-      this.pendingText = '';
+      this.pendingText.set('');
     }
   }
 
@@ -337,18 +345,18 @@ Plan:
    * Handle speech recognition errors
    */
   onSpeechError(error: SpeechError): void {
-    this.errorMessage = error.message;
-    this.pendingText = '';
+    this.errorMessage.set(error.message);
+    this.pendingText.set('');
   }
 
   /**
-   * Override clearNote to also reset speech tracking
+   * Clear note and reset all state
    */
   clearNote() {
-    this.clinicalNote = '';
-    this.aiResponse = '';
-    this.errorMessage = '';
-    this.finalizedText = '';
-    this.pendingText = '';
+    this.clinicalNote.set('');
+    this.aiResponse.set('');
+    this.errorMessage.set('');
+    this.finalizedText.set('');
+    this.pendingText.set('');
   }
 }

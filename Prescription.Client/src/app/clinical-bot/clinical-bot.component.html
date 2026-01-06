@@ -12,6 +12,9 @@
     </div>
   </header>
 
+  @let _isStreaming = isStreaming();
+  @let _isProcessing = isProcessing();
+
   <!-- Main Content Area -->
   <div class="main-content">
     <!-- Input Panel -->
@@ -23,15 +26,14 @@
             (Multi-Language)</span
           >
           <app-speech-recorder
-            [disabled]="isStreaming || isProcessing"
+            [disabled]="_isStreaming || _isProcessing"
             [showLivePreview]="true"
             (transcriptionChange)="onSpeechTranscription($event)"
             (realtimeText)="onRealtimeText($event)"
             (segmentComplete)="onSegmentComplete($event)"
             (recordingStateChange)="onRecordingStateChange($event)"
             (error)="onSpeechError($event)"
-          >
-          </app-speech-recorder>
+          />
         </div>
 
         <div class="panel-actions">
@@ -39,7 +41,7 @@
               type="button"
               class="btn-lang"
               (click)="loadSampleNote()"
-              [disabled]="isStreaming || isProcessing"
+              [disabled]="_isStreaming || _isProcessing"
             >
               <span class="lang-flag">🇬🇧</span> EN
             </button>
@@ -47,7 +49,7 @@
               type="button"
               class="btn-lang"
               (click)="loadBengaliSample()"
-              [disabled]="isStreaming || isProcessing"
+              [disabled]="_isStreaming || _isProcessing"
             >
               <span class="lang-flag">🇧🇩</span> বাং
             </button>
@@ -55,7 +57,7 @@
               type="button"
               class="btn-lang"
               (click)="loadHindiSample()"
-              [disabled]="isStreaming || isProcessing"
+              [disabled]="_isStreaming || _isProcessing"
             >
               <span class="lang-flag">🇮🇳</span> हि
             </button>
@@ -63,7 +65,7 @@
               type="button"
               class="btn-icon"
               (click)="clearNote()"
-              [disabled]="isStreaming || isProcessing"
+              [disabled]="_isStreaming || _isProcessing"
               title="Clear"
             >
               <i class="fa-solid fa-eraser"></i>
@@ -72,12 +74,13 @@
       </div>
       <div class="panel-content">
         <!-- Clinical Note Input with pending text indicator -->
-        <div class="textarea-wrapper" [class.has-pending]="pendingText">
+        <div class="textarea-wrapper" [class.has-pending]="pendingText()">
           <textarea
             class="clinical-note-input"
-            [(ngModel)]="clinicalNote"
+            [value]="clinicalNote()"
+            (input)="clinicalNote.set($any($event.target).value)"
             rows="14"
-            [class.recording-active]="isRecording"
+            [class.recording-active]="isRecording()"
             placeholder="Paste your clinical note here or click the microphone to dictate...
 
 Example format:
@@ -88,26 +91,26 @@ History: Patient reports dry cough, fever up to 101°F
 Physical Exam: BP 120/80, Pulse 88/min, Temp 100.4°F
 Diagnosis: Upper Respiratory Tract Infection
 Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
-            [disabled]="isStreaming || isProcessing"
+            [disabled]="_isStreaming || _isProcessing"
           >
           </textarea>
 
           <!-- Pending text indicator overlay -->
-          @if (isRecording && pendingText) {
+          @if (isRecording() && pendingText()) {
           <div class="pending-text-indicator">
             <span class="pending-label">
               <i class="fa-solid fa-circle pending-dot"></i>
               Listening...
             </span>
-            <span class="pending-preview">{{ pendingText }}</span>
+            <span class="pending-preview">{{ pendingText() }}</span>
           </div>
           }
         </div>
 
-        @if (errorMessage) {
+        @if (errorMessage()) {
         <div class="error-banner">
           <i class="fa-solid fa-exclamation-circle"></i>
-          <span>{{ errorMessage }}</span>
+          <span>{{ errorMessage() }}</span>
         </div>
         }
 
@@ -116,29 +119,29 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
             type="button"
             class="btn-action btn-stream"
             (click)="streamSummary()"
-            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()"
+            [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()"
           >
-            <i class="fa-solid fa-bolt" [class.fa-spin]="isStreaming"></i>
-            {{ isStreaming ? "Streaming..." : "Stream Process" }}
+            <i class="fa-solid fa-bolt" [class.fa-spin]="_isStreaming"></i>
+            {{ _isStreaming ? "Streaming..." : "Stream Process" }}
           </button>
           <button
             type="button"
             class="btn-action btn-generate"
             (click)="getCompleteSummary()"
-            [disabled]="isStreaming || isProcessing || !clinicalNote.trim()"
+            [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()"
           >
             <i
               class="fa-solid fa-wand-magic-sparkles"
-              [class.fa-spin]="isProcessing"
+              [class.fa-spin]="_isProcessing"
             ></i>
-            {{ isProcessing ? "Processing..." : "Generate Prescription" }}
+            {{ _isProcessing ? "Processing..." : "Generate Prescription" }}
           </button>
         </div>
       </div>
     </div>
 
     <!-- Response Panel -->
-    @if (aiResponse) {
+    @if (aiResponse()) {
     <div class="panel panel-response">
       <div class="panel-header panel-header-success">
         <span class="panel-title"
@@ -150,7 +153,7 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
       </div>
       <div class="panel-content">
         <div class="response-box">
-          <pre class="response-text">{{ aiResponse }}</pre>
+          <pre class="response-text">{{ aiResponse() }}</pre>
         </div>
         <div class="redirect-notice">
           <i class="fa-solid fa-arrow-right"></i>

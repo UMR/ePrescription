@@ -1,5 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Injectable, signal, computed, NgZone } from '@angular/core';
 import { SonioxClient } from '@soniox/speech-to-text-web';
 import { environment } from '../../environments/environment';
 import {
@@ -10,9 +9,10 @@ import {
   SpeechToTextConfig,
   ERROR_MESSAGES,
   SpeechTranscriptionResult,
+  RealtimeTextData,
+  SegmentCompleteData,
 } from '../models/speech-to-text.model';
 import { SONIOX_AI_MODEL, SONIOX_MEDICAL_CONTEXT } from '../utils/soniox-constants';
-
 
 @Injectable({
   providedIn: 'root',
@@ -20,52 +20,49 @@ import { SONIOX_AI_MODEL, SONIOX_MEDICAL_CONTEXT } from '../utils/soniox-constan
 export class SpeechToTextService {
   private sonioxClient: SonioxClient | null = null;
 
-  private stateSubject = new BehaviorSubject<SpeechRecordingState>('idle');
-  private transcriptionSubject = new BehaviorSubject<string>('');
-  private tokensSubject = new Subject<SpeechToken[]>();
-  private errorSubject = new BehaviorSubject<SpeechError | null>(null);
-  private finalTextSubject = new Subject<string>();
+  private readonly _state = signal<SpeechRecordingState>('idle');
+  private readonly _transcription = signal<string>('');
+  private readonly _tokens = signal<SpeechToken[]>([]);
+  private readonly _error = signal<SpeechError | null>(null);
+  private readonly _finalText = signal<string>('');
 
-  private realtimeTextSubject = new Subject<{
-    text: string;
-    isFinal: boolean;
-  }>();
-  private segmentCompleteSubject = new Subject<string>();
+  private readonly _realtimeText = signal<RealtimeTextData | null>(null);
+  private readonly _segmentComplete = signal<SegmentCompleteData | null>(null);
 
   private accumulatedText = '';
   private pendingText = '';
+  private isPausingIntentionally = false;
 
-  readonly state$ = this.stateSubject.asObservable();
-  readonly transcription$ = this.transcriptionSubject.asObservable();
-  readonly tokens$ = this.tokensSubject.asObservable();
-  readonly error$ = this.errorSubject.asObservable();
-  readonly finalText$ = this.finalTextSubject.asObservable();
+  readonly state = this._state.asReadonly();
+  readonly transcription = this._transcription.asReadonly();
+  readonly tokens = this._tokens.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly finalText = this._finalText.asReadonly();
+  readonly realtimeText = this._realtimeText.asReadonly();
+  readonly segmentComplete = this._segmentComplete.asReadonly();
 
-  readonly realtimeText$ = this.realtimeTextSubject.asObservable();
-  readonly segmentComplete$ = this.segmentCompleteSubject.asObservable();
+  readonly isRecording = computed(() => this._state() === 'recording');
+  readonly isPaused = computed(() => this._state() === 'paused');
+  readonly isIdle = computed(() => this._state() === 'idle');
+  readonly isError = computed(() => this._state() === 'error');
+  readonly isStopping = computed(() => this._state() === 'stopping');
+  readonly isRequesting = computed(() => this._state() === 'requesting_permission');
+  readonly isActive = computed(() =>
+    this.isRecording() || this.isPaused() || this.isStopping()
+  );
+  readonly hasError = computed(() => this._error() !== null);
+  readonly hasTranscription = computed(() => this._transcription().length > 0);
 
   constructor(private ngZone: NgZone) {
-    this.stateSubject.subscribe((state) => {
-      console.log('[SONIOX]: Recording state changed to', state);
-    });
+    // Debug logging in development
+    if (!environment.production) {
+      this.setupDebugLogging();
+    }
+  }
 
-    this.transcription$.subscribe((value) => {
-      console.log('[SONIOX]: Transcription updated to', value);
-    });
-
-    this.tokens$.subscribe((value) => {
-      console.log('[SONIOX]: Tokens updated to', value);
-    });
-
-    this.error$.subscribe((error) => {
-      if (error) {
-        console.log('[SONIOX]: Error occurred', error);
-      }
-    });
-
-    this.finalText$.subscribe((text) => {
-      console.log('[SONIOX]: Final transcription text received:', text);
-    });
+  private setupDebugLogging(): void {
+    // Using effect would require injection context, so we'll log on state changes manually
+    console.log('[SONIOX]: Service initialized');
   }
 
   /**
@@ -81,18 +78,26 @@ export class SpeechToTextService {
         this.ngZone.run(() => {
           this.setState('recording');
           this.clearError();
+          console.log('[SONIOX]: Recording started');
         });
       },
 
       onFinished: () => {
         this.ngZone.run(() => {
+          // Don't set to idle if we're intentionally pausing
+          if (this.isPausingIntentionally) {
+            this.isPausingIntentionally = false;
+            this.setState('paused');
+            console.log('[SONIOX]: Recording paused');
+            return;
+          }
+
           this.setState('idle');
           // Emit final accumulated text with conversation formatting
           if (this.accumulatedText.trim()) {
-            const formattedText = this.formatFinalTranscription(
-              this.accumulatedText
-            );
-            this.finalTextSubject.next(formattedText);
+            const formattedText = this.formatFinalTranscription(this.accumulatedText);
+            this._finalText.set(formattedText);
+            console.log('[SONIOX]: Recording finished, final text:', formattedText);
           }
         });
       },
@@ -106,7 +111,7 @@ export class SpeechToTextService {
 
       onStateChange: ({ newState, oldState }) => {
         this.ngZone.run(() => {
-          this.handleStateChange(newState, oldState);
+          console.log(`[SONIOX]: State changed: ${oldState} -> ${newState}`);
         });
       },
 
@@ -130,7 +135,9 @@ export class SpeechToTextService {
     this.clearError();
     this.accumulatedText = '';
     this.pendingText = '';
-    this.transcriptionSubject.next('');
+    this._transcription.set('');
+    this._realtimeText.set(null);
+    this._segmentComplete.set(null);
 
     // Initialize client if needed
     if (!this.sonioxClient) {
@@ -143,12 +150,10 @@ export class SpeechToTextService {
       this.sonioxClient?.start({
         model: config?.model || sonioxConfig.model || SONIOX_AI_MODEL,
         audioFormat: 'auto',
-        languageHints: config?.languageHints ||
-          sonioxConfig.languageHints || ['en'],
+        languageHints: config?.languageHints || sonioxConfig.languageHints || ['en'],
         context: config?.context || SONIOX_MEDICAL_CONTEXT,
         enableSpeakerDiarization: config?.enableSpeakerDiarization || true,
-        enableLanguageIdentification:
-          config?.enableLanguageIdentification || false,
+        enableLanguageIdentification: config?.enableLanguageIdentification || false,
         enableEndpointDetection: config?.enableEndpointDetection ?? true,
       });
     } catch (error) {
@@ -163,7 +168,21 @@ export class SpeechToTextService {
    * Stop recording gracefully (waits for final results)
    */
   stopRecording(): void {
-    if (!this.sonioxClient || this.stateSubject.value === 'idle') {
+    if (!this.sonioxClient || this._state() === 'idle') {
+      return;
+    }
+
+    const currentState = this._state();
+
+    // If already paused, the client has already stopped - just finalize
+    if (currentState === 'paused') {
+      this.setState('idle');
+      // Emit final accumulated text with conversation formatting
+      if (this.accumulatedText.trim()) {
+        const formattedText = this.formatFinalTranscription(this.accumulatedText);
+        this._finalText.set(formattedText);
+        console.log('[SONIOX]: Recording stopped from paused state, final text:', formattedText);
+      }
       return;
     }
 
@@ -201,16 +220,19 @@ export class SpeechToTextService {
    * Pause the current recording session
    */
   pauseRecording(): void {
-    if (this.stateSubject.value !== 'recording') {
+    if (this._state() !== 'recording') {
       return;
     }
 
     // Soniox doesn't have built-in pause, so we stop and mark as paused
-    // The accumulated text is preserved
+    // Set flag before stopping so onFinished knows to set 'paused' instead of 'idle'
+    this.isPausingIntentionally = true;
+
     try {
       this.sonioxClient?.stop();
-      this.setState('paused');
+      // State will be set to 'paused' in onFinished callback
     } catch (error) {
+      this.isPausingIntentionally = false;
       this.handleError(
         'unknown_error',
         error instanceof Error ? error.message : 'Failed to pause recording'
@@ -222,7 +244,7 @@ export class SpeechToTextService {
    * Resume a paused recording session
    */
   resumeRecording(): void {
-    if (this.stateSubject.value !== 'paused') {
+    if (this._state() !== 'paused') {
       return;
     }
 
@@ -264,7 +286,7 @@ export class SpeechToTextService {
       language: t.language,
     }));
 
-    this.tokensSubject.next(tokens);
+    this._tokens.set(tokens);
 
     // Build transcription text
     let finalText = '';
@@ -278,16 +300,18 @@ export class SpeechToTextService {
       }
     }
 
+    const timestamp = Date.now();
+
     // Emit real-time text updates for direct streaming to textarea
     if (finalText) {
       const cleanedFinal = this.cleanSegmentText(finalText);
       if (cleanedFinal) {
         // Emit finalized text
-        this.realtimeTextSubject.next({ text: cleanedFinal, isFinal: true });
+        this._realtimeText.set({ text: cleanedFinal, isFinal: true, timestamp });
 
         // Check if this is an endpoint (segment complete)
         if (this.isEndpointMarker(finalText)) {
-          this.segmentCompleteSubject.next(cleanedFinal);
+          this._segmentComplete.set({ text: cleanedFinal, timestamp });
         }
       }
       this.accumulatedText += finalText;
@@ -297,17 +321,14 @@ export class SpeechToTextService {
     if (pendingText) {
       const cleanedPending = this.cleanSegmentText(pendingText);
       if (cleanedPending) {
-        this.realtimeTextSubject.next({ text: cleanedPending, isFinal: false });
+        this._realtimeText.set({ text: cleanedPending, isFinal: false, timestamp });
       }
     }
 
     // Show current transcription for popover (accumulated + pending)
     const currentTranscription = this.accumulatedText + pendingText;
-    this.transcriptionSubject.next(
-      this.formatTranscription(currentTranscription)
-    );
+    this._transcription.set(this.formatTranscription(currentTranscription));
 
-    console.log('[SONIOX] Raw tokens:', result.tokens);
     console.log('[SONIOX] Final text:', finalText);
     console.log('[SONIOX] Pending text:', pendingText);
   }
@@ -318,7 +339,6 @@ export class SpeechToTextService {
   private cleanTokenText(text: string): string {
     if (!text) return '';
     // Keep <end> markers for now as they help with segmentation
-    // They will be cleaned in display formatting
     return text;
   }
 
@@ -346,7 +366,6 @@ export class SpeechToTextService {
 
   /**
    * Format transcription for display as a conversation
-   * Handles <end> markers as conversational pauses/speaker changes
    */
   private formatTranscription(text: string): string {
     if (!text) return '';
@@ -358,7 +377,6 @@ export class SpeechToTextService {
     const formattedSegments: string[] = [];
 
     for (let segment of segments) {
-      // Clean up the segment
       segment = segment.trim();
 
       if (!segment || segment === '.' || segment === ',') {
@@ -388,14 +406,11 @@ export class SpeechToTextService {
       }
     }
 
-    // Join segments with line breaks for conversation format
-    // Each segment represents a different speaker turn or pause
     return formattedSegments.join('\n\n');
   }
 
   /**
    * Format final transcription for clinical note output
-   * Creates a more structured conversation format with em-dash bullets
    */
   private formatFinalTranscription(text: string): string {
     if (!text) return '';
@@ -435,15 +450,7 @@ export class SpeechToTextService {
       }
     }
 
-    // Join with double line breaks for clear separation
     return formattedSegments.join('\n\n');
-  }
-
-  /**
-   * Handle state changes from Soniox client
-   */
-  private handleStateChange(newState: string, oldState: string): void {
-    console.log(`[SONIOX]: Speech state changed: ${oldState} -> ${newState}`);
   }
 
   /**
@@ -452,10 +459,9 @@ export class SpeechToTextService {
   private handleError(status: SpeechErrorStatus, message: string): void {
     console.error(`[SONIOX]: Speech error [${status}]:`, message);
 
-    const userMessage =
-      ERROR_MESSAGES[status] || message || 'An unexpected error occurred.';
+    const userMessage = ERROR_MESSAGES[status] || message || 'An unexpected error occurred.';
 
-    this.errorSubject.next({
+    this._error.set({
       status,
       message: userMessage,
     });
@@ -465,7 +471,7 @@ export class SpeechToTextService {
     // Reset to idle after a delay for transient errors
     if (status === 'websocket_error' || status === 'api_error') {
       setTimeout(() => {
-        if (this.stateSubject.value === 'error') {
+        if (this._state() === 'error') {
           this.setState('idle');
         }
       }, 3000);
@@ -476,14 +482,15 @@ export class SpeechToTextService {
    * Update recording state
    */
   private setState(state: SpeechRecordingState): void {
-    this.stateSubject.next(state);
+    console.log('[SONIOX]: Recording state changed to', state);
+    this._state.set(state);
   }
 
   /**
    * Clear any existing error
    */
   private clearError(): void {
-    this.errorSubject.next(null);
+    this._error.set(null);
   }
 
   /**
@@ -492,35 +499,17 @@ export class SpeechToTextService {
   clearTranscription(): void {
     this.accumulatedText = '';
     this.pendingText = '';
-    this.transcriptionSubject.next('');
+    this._transcription.set('');
+    this._realtimeText.set(null);
+    this._segmentComplete.set(null);
+    this._finalText.set('');
   }
 
   /**
-   * Check if currently recording
-   */
-  isRecording(): boolean {
-    return this.stateSubject.value === 'recording';
-  }
-
-  /**
-   * Check if currently paused
-   */
-  isPaused(): boolean {
-    return this.stateSubject.value === 'paused';
-  }
-
-  /**
-   * Get current state
-   */
-  getState(): SpeechRecordingState {
-    return this.stateSubject.value;
-  }
-
-  /**
-   * Get current transcription text
+   * Get current transcription text (for imperative access)
    */
   getCurrentTranscription(): string {
-    return this.transcriptionSubject.value;
+    return this._transcription();
   }
 
   /**
@@ -535,13 +524,5 @@ export class SpeechToTextService {
       }
       this.sonioxClient = null;
     }
-
-    this.stateSubject.complete();
-    this.transcriptionSubject.complete();
-    this.tokensSubject.complete();
-    this.errorSubject.complete();
-    this.finalTextSubject.complete();
-    this.realtimeTextSubject.complete();
-    this.segmentCompleteSubject.complete();
   }
 }

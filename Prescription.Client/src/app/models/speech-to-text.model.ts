@@ -65,3 +65,20 @@ export const ERROR_MESSAGES: Record<SpeechErrorStatus, string> = {
   websocket_error: 'Connection lost. Please check your internet connection.',
   unknown_error: 'An unexpected error occurred. Please try again.',
 };
+
+/**
+ * Real-time text update data
+ */
+export interface RealtimeTextData {
+  text: string;
+  isFinal: boolean;
+  timestamp: number;
+}
+
+/**
+ * Segment completion data
+ */
+export interface SegmentCompleteData {
+  text: string;
+  timestamp: number;
+}

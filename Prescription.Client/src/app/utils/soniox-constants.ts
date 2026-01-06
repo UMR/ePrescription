@@ -47,4 +47,4 @@ preservation are required.`,
 };
 
 
-export const SONIOX_AI_MODEL = 'stt-rt-preview';
+export const SONIOX_AI_MODEL = 'stt-rt-v3-preview';

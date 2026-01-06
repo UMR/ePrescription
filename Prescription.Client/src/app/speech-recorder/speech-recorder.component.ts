@@ -6,14 +6,16 @@ import {
   signal,
   computed,
   inject,
-  DestroyRef,
+  effect,
+  linkedSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpeechToTextService } from '../services/speech-to-text.service';
 import {
   SpeechRecordingState,
   SpeechError,
+  RealtimeTextData,
+  SegmentCompleteData,
 } from '../models/speech-to-text.model';
 
 @Component({
@@ -24,7 +26,6 @@ import {
   imports: [CommonModule],
 })
 export class SpeechRecorderComponent {
-  private destroyRef = inject(DestroyRef);
   private speechService = inject(SpeechToTextService);
 
   placeholder = input<string>('Click to start recording');
@@ -34,26 +35,23 @@ export class SpeechRecorderComponent {
 
   transcriptionChange = output<string>();
   recordingStateChange = output<SpeechRecordingState>();
-  realtimeText = output<{ text: string; isFinal: boolean }>();
-  segmentComplete = output<string>();
+  realtimeText = output<RealtimeTextData>();
+  segmentComplete = output<SegmentCompleteData>();
   error = output<SpeechError>();
 
-  recordingState = signal<SpeechRecordingState>('idle');
-  liveTranscription = signal<string>('');
-  pendingText = signal<string>('');
-  currentError = signal<SpeechError | null>(null);
+  recordingState = linkedSignal(() => this.speechService.state());
+  liveTranscription = linkedSignal(() => this.speechService.transcription());
+  currentError = linkedSignal(() => this.speechService.error());
 
-  isIdle = computed(() => this.recordingState() === 'idle');
-  isRecording = computed(() => this.recordingState() === 'recording');
-  isPaused = computed(() => this.recordingState() === 'paused');
-  isRequesting = computed(
-    () => this.recordingState() === 'requesting_permission'
-  );
-  isStopping = computed(() => this.recordingState() === 'stopping');
-  isError = computed(() => this.recordingState() === 'error');
-  isActive = computed(
-    () => this.isRecording() || this.isPaused() || this.isStopping()
-  );
+  pendingText = signal<string>('');
+
+  isIdle = computed(() => this.speechService.isIdle());
+  isRecording = computed(() => this.speechService.isRecording());
+  isPaused = computed(() => this.speechService.isPaused());
+  isRequesting = computed(() => this.speechService.isRequesting());
+  isStopping = computed(() => this.speechService.isStopping());
+  isError = computed(() => this.speechService.isError());
+  isActive = computed(() => this.speechService.isActive());
 
   buttonAriaLabel = computed(() => {
     const state = this.recordingState();
@@ -97,65 +95,65 @@ export class SpeechRecorderComponent {
     }
   });
 
+  private previousRealtimeTimestamp = 0;
+  private previousSegmentTimestamp = 0;
+  private previousFinalText = '';
+
   constructor() {
-    this.subscribeToService();
-  }
+    // Effect: Emit state changes to parent
+    effect(() => {
+      const state = this.speechService.state();
+      this.recordingStateChange.emit(state);
+    });
 
-  private subscribeToService(): void {
-    // State changes
-    this.speechService.state$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((state) => {
-        this.recordingState.set(state);
-        this.recordingStateChange.emit(state);
-      });
+    // Effect: Handle real-time text updates
+    effect(() => {
+      const realtimeData = this.speechService.realtimeText();
+      if (
+        realtimeData &&
+        realtimeData.timestamp !== this.previousRealtimeTimestamp
+      ) {
+        this.previousRealtimeTimestamp = realtimeData.timestamp;
+        console.log('Realtime text data received:', realtimeData);
 
-    // Live transcription (for popover display)
-    this.speechService.transcription$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((text) => {
-        console.log('Live transcription update:', text);
-        this.liveTranscription.set(text);
-      });
-
-    // Real-time text streaming (for direct textarea updates)
-    this.speechService.realtimeText$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((data) => {
-        console.log('Realtime text data received:', data);
-        if (data.isFinal) {
+        if (realtimeData.isFinal) {
           this.pendingText.set('');
         } else {
-          this.pendingText.set(data.text);
+          this.pendingText.set(realtimeData.text);
         }
-        this.realtimeText.emit(data);
-      });
 
-    // Segment complete (speaker pause/endpoint detected)
-    this.speechService.segmentComplete$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((text) => {
-        this.segmentComplete.emit(text);
-      });
+        this.realtimeText.emit(realtimeData);
+      }
+    });
 
-    // Final transcription text (when recording stops)
-    this.speechService.finalText$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((text) => {
-        if (text) {
-          this.transcriptionChange.emit(text);
-        }
-      });
+    // Effect: Handle segment completion
+    effect(() => {
+      const segmentData = this.speechService.segmentComplete();
+      if (
+        segmentData &&
+        segmentData.timestamp !== this.previousSegmentTimestamp
+      ) {
+        this.previousSegmentTimestamp = segmentData.timestamp;
+        this.segmentComplete.emit(segmentData);
+      }
+    });
 
-    // Errors
-    this.speechService.error$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((err) => {
-        this.currentError.set(err);
-        if (err) {
-          this.error.emit(err);
-        }
-      });
+    // Effect: Handle final text (when recording stops)
+    effect(() => {
+      const finalText = this.speechService.finalText();
+      if (finalText && finalText !== this.previousFinalText) {
+        this.previousFinalText = finalText;
+        this.transcriptionChange.emit(finalText);
+      }
+    });
+
+    // Effect: Handle errors
+    effect(() => {
+      const err = this.speechService.error();
+      if (err) {
+        this.error.emit(err);
+      }
+    });
   }
 
   onButtonClick(): void {
@@ -198,6 +196,9 @@ export class SpeechRecorderComponent {
   }
 
   private startRecording(): void {
+    this.previousRealtimeTimestamp = 0;
+    this.previousSegmentTimestamp = 0;
+    this.previousFinalText = '';
     this.speechService.clearTranscription();
     this.speechService.startRecording();
   }
