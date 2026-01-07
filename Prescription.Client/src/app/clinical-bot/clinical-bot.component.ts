@@ -28,7 +28,8 @@ export class ClinicalBotComponent implements OnDestroy {
   isRecording = signal<boolean>(false);
 
   // Speech tracking signals
-  private finalizedText = signal<string>('');
+  // baseText: The text content before any pending speech (includes user edits + finalized speech)
+  private baseText = signal<string>('');
   pendingText = signal<string>('');
 
   // Computed signals
@@ -276,38 +277,40 @@ Plan:
    */
   onSpeechTranscription(_text: string): void {
     console.log('Final transcription received:', _text);
-    // This is called when recording stops with the complete formatted text
     // Clear the pending text indicator
     this.pendingText.set('');
+    // Sync baseText with current clinicalNote (preserving any user edits)
+    this.baseText.set(this.clinicalNote());
   }
 
   /**
    * Handle real-time text streaming (for direct textarea updates)
    */
   onRealtimeText(data: RealtimeTextData): void {
-    console.log('Realtime text data received ------------> :', data);
+    console.log('Realtime text data received:', data);
     if (!data.text) return;
 
     if (data.isFinal) {
-      // Finalized text - append to clinical note permanently
-      const currentFinalized = this.finalizedText();
+      // Finalized text - append to base text permanently
+      const currentBase = this.baseText();
       let separator = '';
-      if (currentFinalized && !currentFinalized.endsWith(' ') && !currentFinalized.endsWith('\n')) {
+      if (currentBase && !currentBase.endsWith(' ') && !currentBase.endsWith('\n')) {
         separator = ' ';
       }
-      this.finalizedText.set(currentFinalized + separator + data.text);
+      const newBaseText = currentBase + separator + data.text;
+      this.baseText.set(newBaseText);
       this.pendingText.set('');
 
-      // Update the clinical note with finalized text only
-      this.clinicalNote.set(this.finalizedText());
+      // Update the clinical note with the new base text
+      this.clinicalNote.set(newBaseText);
     } else {
-      // Pending text - show as temporary (will be replaced)
+      // Pending text - show as temporary (will be replaced by final)
       this.pendingText.set(data.text);
 
-      // Update clinical note to show finalized + pending
-      const currentFinalized = this.finalizedText();
-      const separator = currentFinalized && !currentFinalized.endsWith(' ') && !currentFinalized.endsWith('\n') ? ' ' : '';
-      this.clinicalNote.set(currentFinalized + separator + data.text);
+      // Show base text + pending in the textarea
+      const currentBase = this.baseText();
+      const separator = currentBase && !currentBase.endsWith(' ') && !currentBase.endsWith('\n') ? ' ' : '';
+      this.clinicalNote.set(currentBase + separator + data.text);
     }
   }
 
@@ -316,10 +319,11 @@ Plan:
    */
   onSegmentComplete(_data: SegmentCompleteData): void {
     // A segment is complete - add a line break for conversation separation
-    const currentFinalized = this.finalizedText();
-    if (currentFinalized && !currentFinalized.endsWith('\n')) {
-      this.finalizedText.set(currentFinalized + '\n');
-      this.clinicalNote.set(this.finalizedText());
+    const currentBase = this.baseText();
+    if (currentBase && !currentBase.endsWith('\n')) {
+      const newBaseText = currentBase + '\n';
+      this.baseText.set(newBaseText);
+      this.clinicalNote.set(newBaseText);
     }
   }
 
@@ -327,17 +331,53 @@ Plan:
    * Handle recording state changes
    */
   onRecordingStateChange(state: SpeechRecordingState): void {
+    const wasRecording = this.isRecording();
     this.isRecording.set(state === 'recording');
 
-    // Reset tracking when starting a new recording
-    if (state === 'recording') {
-      this.finalizedText.set(this.clinicalNote()); // Preserve existing text
+    // When starting to record, sync baseText with current clinicalNote (preserves user edits)
+    if (state === 'recording' && !wasRecording) {
+      this.baseText.set(this.clinicalNote());
       this.pendingText.set('');
     }
 
-    // Clear pending when not recording
+    // When stopping/idle, sync baseText with clinicalNote and clear pending
     if (state === 'idle' || state === 'error') {
+      this.baseText.set(this.clinicalNote());
       this.pendingText.set('');
+    }
+
+    // When paused, also sync to preserve any edits made during pause
+    if (state === 'paused') {
+      this.baseText.set(this.clinicalNote());
+      this.pendingText.set('');
+    }
+  }
+
+  /**
+   * Handle user input in textarea - sync baseText when user edits during recording
+   */
+  onTextareaInput(value: string): void {
+    this.clinicalNote.set(value);
+
+    // If recording is active (or paused), sync baseText to allow user edits
+    // We need to extract the base part (without pending text)
+    if (this.isRecording() && this.pendingText()) {
+      // User is editing while there's pending text
+      // The pending text will be at the end, so we update baseText to exclude it
+      const pending = this.pendingText();
+      if (value.endsWith(pending)) {
+        // User didn't modify the pending part, update base
+        const baseLength = value.length - pending.length;
+        const separator = value.charAt(baseLength - 1) === ' ' ? 1 : 0;
+        this.baseText.set(value.substring(0, baseLength - separator).trimEnd());
+      } else {
+        // User modified the text including pending area - treat all as base
+        this.baseText.set(value);
+        this.pendingText.set('');
+      }
+    } else {
+      // Not recording or no pending text - just sync
+      this.baseText.set(value);
     }
   }
 
@@ -347,6 +387,7 @@ Plan:
   onSpeechError(error: SpeechError): void {
     this.errorMessage.set(error.message);
     this.pendingText.set('');
+    this.baseText.set(this.clinicalNote());
   }
 
   /**
@@ -356,7 +397,7 @@ Plan:
     this.clinicalNote.set('');
     this.aiResponse.set('');
     this.errorMessage.set('');
-    this.finalizedText.set('');
+    this.baseText.set('');
     this.pendingText.set('');
   }
 }

@@ -78,7 +78,7 @@
           <textarea
             class="clinical-note-input"
             [value]="clinicalNote()"
-            (input)="clinicalNote.set($any($event.target).value)"
+            (input)="onTextareaInput($any($event.target).value)"
             rows="14"
             [class.recording-active]="isRecording()"
             placeholder="Paste your clinical note here or click the microphone to dictate...
