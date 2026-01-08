@@ -43,3 +43,4 @@ preservation are required.`,
 
 
 export const SONIOX_AI_MODEL = 'stt-rt-v3';
+export const SONIOX_API_KEY = 'dd54d8952b404ff3a8115c037df4fba8a00767fa9c54b173637668e4efbfe59a';
