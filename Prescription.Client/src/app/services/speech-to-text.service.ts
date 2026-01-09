@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, NgZone } from '@angular/core';
+import { Injectable, signal, computed, NgZone, OnDestroy } from '@angular/core';
 import { SonioxClient } from '@soniox/speech-to-text-web';
 import { environment } from '../../environments/environment';
 import {
@@ -17,7 +17,7 @@ import { SONIOX_AI_MODEL, SONIOX_MEDICAL_CONTEXT } from '../utils/soniox-constan
 @Injectable({
   providedIn: 'root',
 })
-export class SpeechToTextService {
+export class SpeechToTextService implements OnDestroy {
   private sonioxClient: SonioxClient | null = null;
 
   private readonly _state = signal<SpeechRecordingState>('idle');
@@ -58,6 +58,10 @@ export class SpeechToTextService {
     if (!environment.production) {
       this.setupDebugLogging();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy();
   }
 
   private setupDebugLogging(): void {
@@ -522,4 +526,5 @@ export class SpeechToTextService {
       this.sonioxClient = null;
     }
   }
+
 }
