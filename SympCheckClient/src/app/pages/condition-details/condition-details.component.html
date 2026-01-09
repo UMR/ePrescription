@@ -1,0 +1,106 @@
+<div class="condition-details-container">
+  <ng-container *ngIf="loading">
+    <div class="loading-state" role="status" aria-live="polite">
+      <svg class="ecg" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+        <path
+          d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
+        />
+      </svg>
+      <p>Loading condition details...</p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="error && !loading">
+    <div class="error-state" role="alert">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <div>
+          <h2>Unable to load details</h2>
+          <p>{{ errorMessage }}</p>
+          <div class="error-actions">
+            <button class="retry-btn" (click)="retry()">Retry</button>
+            <button class="back-btn" (click)="goBack()">Back to results</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="condition && !loading && !error">
+    <header class="hero">
+      <div class="hero-left">
+        <button class="back-button" (click)="goBack()" aria-label="Back to results">
+          <span class="back-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path
+                d="M15 18l-6-6 6-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+        </button>
+        <div class="title-wrap">
+          <h1 class="condition-name">{{ condition.name }}</h1>
+          <div
+            class="specialties"
+            *ngIf="condition.specialties && condition.specialties.length > 0"
+          >
+            <span class="specialty-chip" *ngFor="let specialty of condition.specialties">{{
+              specialty
+            }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content" role="main">
+      <section class="left-column">
+        <div class="summary-card">
+          <h2 class="sr">About</h2>
+          <p class="lead-text" *ngIf="condition.description">{{ condition.description }}</p>
+          <!-- Removed duplicate "Return to Results" button; header back button is primary navigation -->
+        </div>
+
+        <div class="section" *ngIf="condition.commonCauses && condition.commonCauses.length > 0">
+          <h3>Common Causes</h3>
+          <ul class="list-stack">
+            <li *ngFor="let cause of condition.commonCauses">{{ cause }}</li>
+          </ul>
+        </div>
+
+        <div
+          class="section"
+          *ngIf="condition.investigations && condition.investigations.length > 0"
+        >
+          <h3>Recommended Investigations</h3>
+          <ul class="list-stack">
+            <li *ngFor="let investigation of condition.investigations">{{ investigation }}</li>
+          </ul>
+        </div>
+      </section>
+
+      <aside class="right-column" aria-label="Condition highlights">
+        <div class="card red-flags" *ngIf="condition.redFlags && condition.redFlags.length > 0">
+          <h3>⚠️ Red Flags</h3>
+          <p class="small">Seek urgent care if you experience:</p>
+          <ul class="red-flags-list">
+            <li *ngFor="let flag of condition.redFlags" class="flag-item">{{ flag }}</li>
+          </ul>
+        </div>
+
+        <div class="card source" *ngIf="condition.source">
+          <h4>Source</h4>
+          <p class="small">{{ condition.source }}</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="disclaimer" *ngIf="condition.disclaimer">
+      <p class="disclaimer-text">{{ condition.disclaimer }}</p>
+    </footer>
+  </ng-container>
+</div>

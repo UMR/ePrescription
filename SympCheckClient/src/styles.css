@@ -1,0 +1,338 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --surface: #0b1121;
+  --panel: #111827;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #818cf8;
+  --border: rgba(148, 163, 184, 0.4);
+  --card: #1f2937;
+  --input-bg: #1a2847;
+  --input-border: #334155;
+  --input-text: #e2e8f0;
+  --input-focus: #818cf8;
+  --disabled-bg: #0b1222;
+  --focus-ring: rgba(129, 140, 248, 0.2);
+  --step-bg: #334155;
+  --step-text: #94a3b8;
+  --step-active-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --step-current-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+  --step-label-color: #64748b;
+  --step-label-active: #10b981;
+  --step-label-current: #818cf8;
+  --step-title-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --heading-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --heading-border: #34d399;
+  --h4-color: #cbd5e1;
+  --btn-disabled: #475569;
+  --btn-disabled-text: #64748b;
+  --btn-warning: #f59e0b;
+  --btn-warning-border: #f59e0b;
+  --btn-warning-hover: #fbbf24;
+  --btn-warning-hover-text: #0b1121;
+  --btn-success: #34d399;
+  --btn-success-border: #34d399;
+  --btn-success-hover: #6ee7b7;
+  --list-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --list-border-left: #818cf8;
+  --list-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --list-hover-border: #a78bfa;
+  --strong-color: #e2e8f0;
+  --radio-border: #334155;
+  --radio-bg: #0f172a;
+  --radio-hover-border: #818cf8;
+  --radio-hover-bg: #1e293b;
+  --radio-selected-border: #818cf8;
+  --radio-selected-bg: #1e293b;
+  --radio-checked-text: #818cf8;
+  --review-bg: #0f172a;
+  --review-border: #334155;
+  --review-strong: #cbd5e1;
+  --review-text: #e2e8f0;
+  --pill-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --popover-bg: #0f172a;
+  --popover-border: #334155;
+  --error-text: #fca5a5;
+  --error-bg: #3f1d1d;
+  --error-border: #7f1d1d;
+  --results-heading-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --condition-card-bg: #0f172a;
+  --condition-card-border: transparent;
+  --condition-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --condition-card-hover-shadow: 0 6px 20px rgba(129, 140, 248, 0.35);
+  --condition-card-hover-border: rgba(129, 140, 248, 0.8);
+  --condition-card-hover-bg: #111827;
+  --condition-header-hover: #1e293b;
+  --condition-name-color: #e2e8f0;
+  --condition-meta-color: #94a3b8;
+  --condition-rank-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --condition-tag-bg: #1e3a5f;
+  --condition-tag-border: #3b82f6;
+  --condition-tag-color: #93c5fd;
+  --physician-tag-bg: #1e293b;
+  --physician-tag-border: #475569;
+  --physician-tag-color: #818cf8;
+  --physician-badge-gradient: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  --condition-details-border: #334155;
+  --condition-details-text: #94a3b8;
+  --condition-detail-heading: #cbd5e1;
+  --condition-view-btn-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+  --condition-view-btn-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  --physician-card-bg: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  --physician-card-border: #475569;
+  --physician-card-text: #e2e8f0;
+  --physician-card-icon: #818cf8;
+  --disclaimer-bg: #3d2e00;
+  --disclaimer-border: #f59e0b;
+  --disclaimer-highlight: #fbbf24;
+  --disclaimer-text: #fde68a;
+  --danger-bg: #3f1d1d;
+  --danger-border: #ef4444;
+  --danger-text: #fca5a5;
+  --danger-icon: #f87171;
+  --confidence-bar-bg: #334155;
+  --confidence-fill-gradient: linear-gradient(90deg, #818cf8 0%, #a78bfa 100%);
+  --confidence-text: #cbd5e1;
+  --body-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --option-selected-text: #f8fafc;
+}
+
+/* Force light text on dark inputs */
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
+
+/* Override browser autofill colors */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  -webkit-text-fill-color: var(--input-text) !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* Force all input types to maintain background */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  background-color: var(--input-bg) !important;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+  background-color: var(--input-bg) !important;
+}
+
+:root[data-theme='light'] {
+  --surface: #f4f6fb;
+  --panel: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --accent: #2563eb;
+  --border: rgba(148, 163, 184, 0.6);
+  --card: #eef2ff;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-text: #0f172a;
+  --input-focus: #2563eb;
+  --disabled-bg: #f1f5f9;
+  --focus-ring: rgba(37, 99, 235, 0.2);
+  --step-bg: #e2e8f0;
+  --step-text: #475569;
+  --step-active-gradient: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
+  --step-current-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --step-label-color: #64748b;
+  --step-label-active: #0ea5e9;
+  --step-label-current: #2563eb;
+  --step-title-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --heading-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  --heading-border: #0ea5e9;
+  --h4-color: #475569;
+  --btn-disabled: #cbd5e1;
+  --btn-disabled-text: #94a3b8;
+  --btn-warning: #f97316;
+  --btn-warning-border: #fb923c;
+  --btn-warning-hover: #fdba74;
+  --btn-warning-hover-text: #0f172a;
+  --btn-success: #059669;
+  --btn-success-border: #047857;
+  --btn-success-hover: #34d399;
+  --list-bg: #f1f5f9;
+  --list-border-left: #0ea5e9;
+  --list-box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --list-hover-border: #2563eb;
+  --strong-color: #0f172a;
+  --radio-border: #cbd5e1;
+  --radio-bg: #f1f5f9;
+  --radio-hover-border: #2563eb;
+  --radio-hover-bg: #e2e8f0;
+  --radio-selected-border: #2563eb;
+  --radio-selected-bg: #e0f2fe;
+  --radio-checked-text: #2563eb;
+  --review-bg: #f1f5f9;
+  --review-border: #cbd5e1;
+  --review-strong: #475569;
+  --review-text: #0f172a;
+  --pill-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  --popover-bg: #ffffff;
+  --popover-border: #cbd5e1;
+  --error-text: #991b1b;
+  --error-bg: #fee2e2;
+  --error-border: #fecaca;
+  --results-heading-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --condition-card-bg: #ffffff;
+  --condition-card-border: transparent;
+  --condition-card-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  --condition-card-hover-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+  --condition-card-hover-border: rgba(37, 99, 235, 0.8);
+  --condition-card-hover-bg: #eef2ff;
+  --condition-header-hover: #eef2ff;
+  --condition-name-color: #0f172a;
+  --condition-meta-color: #475569;
+  --condition-rank-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  --condition-tag-bg: #e0f2fe;
+  --condition-tag-border: #93c5fd;
+  --condition-tag-color: #1d4ed8;
+  --physician-tag-bg: #e2e8f0;
+  --physician-tag-border: #cbd5e1;
+  --physician-tag-color: #1d4ed8;
+  --physician-badge-gradient: linear-gradient(135deg, #e2e8f0 0%, #dbeafe 100%);
+  --condition-details-border: #e2e8f0;
+  --condition-details-text: #475569;
+  --condition-detail-heading: #0f172a;
+  --condition-view-btn-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --condition-view-btn-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+  --physician-card-bg: #eef2ff;
+  --physician-card-border: #cbd5e1;
+  --physician-card-text: #0f172a;
+  --physician-card-icon: #1d4ed8;
+  --disclaimer-bg: #fef3c7;
+  --disclaimer-border: #fbbf24;
+  --disclaimer-highlight: #92400e;
+  --disclaimer-text: #78350f;
+  --danger-bg: #fee2e2;
+  --danger-border: #fecaca;
+  --danger-text: #991b1b;
+  --danger-icon: #b91c1c;
+  --confidence-bar-bg: #e5e7eb;
+  --confidence-fill-gradient: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  --confidence-text: #0f172a;
+  --body-gradient: linear-gradient(135deg, #edf2fb 0%, #e2e8f0 100%);
+  --option-selected-text: #0f172a;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--body-gradient);
+  background-color: var(--surface);
+  min-height: 100vh;
+  color: var(--text);
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.app-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 20px 0;
+}
+
+.app-container h1 {
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 40px;
+  font-size: 2.5em;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE & TABLET
+   Global responsive styles
+   ======================================== */
+
+/* Mobile breakpoint - 768px and below */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px 0;
+  }
+
+  .app-container h1 {
+    font-size: 2em;
+    margin-bottom: 30px;
+  }
+
+  /* Mobile: Scale down logo/icon */
+  .app-container svg {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 15px auto !important;
+  }
+}
+
+/* Small mobile breakpoint - 480px and below */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 5px 0;
+  }
+
+  .app-container h1 {
+    font-size: 1.75em;
+    margin-bottom: 20px;
+  }
+
+  .app-container svg {
+    width: 50px !important;
+    height: 50px !important;
+    margin: 10px auto !important;
+  }
+}
+
+/* Global heartbeat ECG loader (used in multiple pages) */
+.ecg {
+  width: 160px;
+  height: 40px;
+  margin-bottom: 1rem;
+}
+
+.ecg path {
+  stroke: #818cf8;
+  stroke-width: 3;
+  fill: none;
+  filter: drop-shadow(0 0 6px rgba(129,140,248,0.6));
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 120 240;
+  animation: ecg-move 1.2s linear infinite;
+}
+
+@keyframes ecg-move {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -360; }
+}
+
+.loading-container .ecg path {
+  animation-duration: 1.6s;
+}
+
