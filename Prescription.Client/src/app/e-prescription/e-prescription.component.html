@@ -176,9 +176,13 @@
     <form [formGroup]="prescriptionForm">
         <div class="main-content-grid">
             <div class="left-column">
-                <div class="panel panel-pink chief-complaints-panel">
+                <div class="panel panel-pink chief-complaints-panel" [class.panel-expanded]="isChiefComplaintsExpanded">
                     <div class="panel-header">
                         <span class="panel-title">Chief Complaints</span>
+                        <button class="btn-panel-icon" title="Expand/Collapse" (click)="toggleChiefComplaintsExpand()">
+                            <i class="fa-solid" [class.fa-expand]="!isChiefComplaintsExpanded"
+                                [class.fa-compress]="isChiefComplaintsExpanded"></i>
+                        </button>
 
                     </div>
                     <div class="panel-content">
@@ -230,6 +234,9 @@
                         </div>
                     </div>
                 </div>
+                @if (isChiefComplaintsExpanded) {
+                <div class="panel-overlay" (click)="toggleChiefComplaintsExpand()"></div>
+                }
 
                 <!-- Physical Findings Panel -->
                 <div class="panel panel-pink physical-findings-panel"

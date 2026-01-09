@@ -53,7 +53,6 @@ export class RemoteUserComponent implements OnInit, AfterViewInit, OnChanges, On
       try {
         this.remoteUser.audioTrack.play();
       } catch (error) {
-        // Ignore errors from already playing audio
       }
     }
   }

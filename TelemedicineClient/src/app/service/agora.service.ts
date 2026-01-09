@@ -212,7 +212,7 @@ export class AgoraService {
     return this.isScreenSharing ? this.screenTrack : this.localVideoTrack;
   }
 
-  getLocalAudioTrack(): IMicrophoneAudioTrack | null {
+  getLocalAudioTrack(): IMicrophoneAudioTrack | ILocalAudioTrack | null {
     return this.localAudioTrack;
   }
 }

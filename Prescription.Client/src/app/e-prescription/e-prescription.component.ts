@@ -163,6 +163,7 @@ export class EPrescriptionComponent implements OnInit, OnDestroy {
 
   showPdfPreview = false;
   pdfData?: PrescriptionPdfData;
+  isChiefComplaintsExpanded = false;
 
   doctorName = 'Dr. John Doe';
   doctorSpecialization = 'General Physician';
@@ -189,10 +190,13 @@ export class EPrescriptionComponent implements OnInit, OnDestroy {
     document.addEventListener('click', this.onDocumentClick.bind(this));
   }
 
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
     document.removeEventListener('click', this.onDocumentClick.bind(this));
+    document.removeEventListener('keydown', this.handleEscapeKey);
+    document.body.style.overflow = '';
   }
 
   private onDocumentClick(event: Event) {
@@ -461,6 +465,23 @@ export class EPrescriptionComponent implements OnInit, OnDestroy {
       this.activeDropdown = null;
     }
   }
+  toggleChiefComplaintsExpand() {
+    this.isChiefComplaintsExpanded = !this.isChiefComplaintsExpanded;
+
+    if (this.isChiefComplaintsExpanded) {
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', this.handleEscapeKey);
+    } else {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', this.handleEscapeKey);
+    }
+  }
+
+  private handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.isChiefComplaintsExpanded) {
+      this.toggleChiefComplaintsExpand();
+    }
+  };
 
   selectSymptomTemplate(item: AutocompleteItem) {
     this.isLoadingSymptomTemplate = true;
