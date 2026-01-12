@@ -2,54 +2,51 @@
   <!-- Error Display -->
   <div *ngIf="error" class="error-alert">
     <p>{{ error }}</p>
+    <button *ngIf="errorStatus !== 429" (click)="retry()" class="retry-btn">Retry</button>
   </div>
 
   <!-- Global Loading while fetching next question (when no question is available yet) -->
   <div *ngIf="isLoading && !currentQuestion" class="loading-spinner">
     <svg class="ecg" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
       <path
-        d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
-      />
+        d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
     </svg>
     <p>Getting next question...</p>
   </div>
 
 
   <!-- Show Question -->
-  <div *ngIf="(state?.phase === 'initial' || state?.phase === 'asking-questions' || state?.phase === 'asking-additional') && currentQuestion" class="question-section">
+  <div
+    *ngIf="(state?.phase === 'initial' || state?.phase === 'asking-questions' || state?.phase === 'asking-additional') && currentQuestion"
+    class="question-section">
     <div class="question-card">
+
+
       <h3>{{ currentQuestion.question }}</h3>
 
       <!-- Multiple Choice Options -->
       <div *ngIf="currentQuestion.options && currentQuestion.options.length > 0" class="options-container">
-        <button
-          *ngFor="let option of currentQuestion.options"
-          type="button"
-          [class.active]="selectedOption === option"
-          (click)="selectedOption = option"
-          class="option-button"
-        >
+        <button *ngFor="let option of currentQuestion.options" type="button" [class.active]="selectedOption === option"
+          (click)="selectedOption = option" class="option-button">
           {{ option }}
         </button>
       </div>
 
       <!-- Text Answer -->
       <div *ngIf="!currentQuestion.options || currentQuestion.options.length === 0" class="text-answer">
-        <textarea
-          [(ngModel)]="userTextAnswer"
-          (ngModelChange)="filterSymptoms()"
-          placeholder="Enter your answer..."
-          rows="4"
-        ></textarea>
-        
+        <textarea [(ngModel)]="userTextAnswer" (ngModelChange)="filterSymptoms()" placeholder="Enter your answer..."
+          rows="4"></textarea>
+
+        <!-- Guidance Overlay for Initial Symptom (Visible when empty) -->
+        <div *ngIf="!initialSymptomSubmitted && !userTextAnswer" class="guidance-overlay fade-in">
+          <div class="guidance-icon">ℹ️</div>
+          <p>For the most accurate results, please describe your symptoms and conditions clearly. Only input medical symptoms and conditions.</p>
+        </div>
+
         <!-- Autocomplete suggestions for initial symptom -->
         <div *ngIf="!initialSymptomSubmitted && filteredSymptoms.length > 0" class="autocomplete-dropdown">
-          <button
-            *ngFor="let symptom of filteredSymptoms"
-            type="button"
-            class="autocomplete-item"
-            (click)="selectSymptom(symptom)"
-          >
+          <button *ngFor="let symptom of filteredSymptoms" type="button" class="autocomplete-item"
+            (click)="selectSymptom(symptom)">
             {{ symptom }}
           </button>
         </div>
@@ -63,8 +60,7 @@
           </div>
           <svg class="ecg-small" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
             <path
-              d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
-            />
+              d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
           </svg>
           <p>Getting next question...</p>
         </div>
@@ -87,8 +83,7 @@
       <div *ngIf="isLoading" class="loading-next-question">
         <svg class="ecg-small" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
           <path
-            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
-          />
+            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
         </svg>
         <p>Getting next question...</p>
       </div>
@@ -113,8 +108,7 @@
       <div *ngIf="isLoading" class="loading-next-question">
         <svg class="ecg-small" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
           <path
-            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
-          />
+            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
         </svg>
         <p>Getting next question...</p>
       </div>

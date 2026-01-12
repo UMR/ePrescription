@@ -2,11 +2,8 @@
   <!-- Step 1: Interactive Conversation -->
   <div *ngIf="currentStep === 1" class="step-layout fade-in">
     <div class="form-section">
-      <app-interactive-conversation
-        #conversationComponent
-        [availableSymptoms]="availableSymptoms"
-        (completed)="onConversationComplete()"
-      ></app-interactive-conversation>
+      <app-interactive-conversation #conversationComponent [availableSymptoms]="availableSymptoms"
+        (completed)="onConversationComplete()"></app-interactive-conversation>
       <div class="step-actions">
         <button type="button" (click)="resetForm()" class="btn-secondary">Reset</button>
       </div>
@@ -42,7 +39,7 @@
       <div class="step-intro">
         <h2>Vital Information</h2>
         <p>Please provide your demographic and vital information to complete the analysis.</p>
-        
+
         <!-- Initial Symptom Card with accordion -->
         <div class="info-card-wrapper">
           <button type="button" class="card-accordion-header" (click)="isSymptomExpanded = !isSymptomExpanded">
@@ -57,7 +54,7 @@
             <p class="symptom-text">{{ initialSymptom }}</p>
           </div>
         </div>
-        
+
         <!-- Conversation History with accordion -->
         <div class="info-card-wrapper">
           <button type="button" class="card-accordion-header" (click)="isHistoryExpanded = !isHistoryExpanded">
@@ -79,9 +76,7 @@
           </div>
         </div>
       </div>
-      <app-demographics-form
-        (submit)="onDemographicsSubmit($event)"
-      ></app-demographics-form>
+      <app-demographics-form (submit)="onDemographicsSubmit($event)"></app-demographics-form>
       <div class="step-actions">
         <button type="button" (click)="resetForm()" class="btn-secondary">Start Over</button>
       </div>
@@ -101,7 +96,7 @@
       <div class="step-intro">
         <h2>Symptoms</h2>
         <p>Your detailed symptom analysis is shown on the right.</p>
-        
+
         <!-- Initial Symptom Card with accordion -->
         <div class="info-card-wrapper">
           <button type="button" class="card-accordion-header" (click)="isSymptomExpanded = !isSymptomExpanded">
@@ -116,7 +111,7 @@
             <p class="symptom-text">{{ initialSymptom }}</p>
           </div>
         </div>
-        
+
         <!-- Conversation History with accordion -->
         <div class="info-card-wrapper">
           <button type="button" class="card-accordion-header" (click)="isHistoryExpanded = !isHistoryExpanded">
@@ -137,10 +132,11 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Demographics & Vitals Card with accordion -->
         <div *ngIf="demographics" class="info-card-wrapper">
-          <button type="button" class="card-accordion-header" (click)="isDemographicsExpanded = !isDemographicsExpanded">
+          <button type="button" class="card-accordion-header"
+            (click)="isDemographicsExpanded = !isDemographicsExpanded">
             <div class="header-icon">👤</div>
             <div class="header-content">
               <h3>Demographics & Vitals</h3>
@@ -169,9 +165,11 @@
               <div class="demo-label">🌡️ Temperature</div>
               <div class="demo-value">{{ demographics.temperature }}°C</div>
             </div>
-            <div class="demo-item vital" *ngIf="demographics.bloodPressureSystolic && demographics.bloodPressureDiastolic">
+            <div class="demo-item vital"
+              *ngIf="demographics.bloodPressureSystolic && demographics.bloodPressureDiastolic">
               <div class="demo-label">❤️ Blood Pressure</div>
-              <div class="demo-value">{{ demographics.bloodPressureSystolic }}/{{ demographics.bloodPressureDiastolic }}</div>
+              <div class="demo-value">{{ demographics.bloodPressureSystolic }}/{{ demographics.bloodPressureDiastolic }}
+              </div>
             </div>
             <div class="demo-item vital" *ngIf="demographics.heartRate">
               <div class="demo-label">💓 Heart Rate</div>
@@ -188,21 +186,22 @@
       <div *ngIf="isAnalyzing" class="loading-state fade-in">
         <svg class="ecg" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
           <path
-            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20"
-          />
+            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
         </svg>
         <p>Analyzing...</p>
       </div>
 
       <div *ngIf="analysisError" class="error-alert fade-in">
         <p>{{ analysisError }}</p>
+        <button (click)="retryAnalysis()" class="btn-secondary retry-btn">Retry Analysis</button>
       </div>
 
       <div *ngIf="!isAnalyzing && !analysisError && diagnosisResults.length > 0" class="results-container fade-in">
         <app-diagnosis-results [conditions]="diagnosisResults"></app-diagnosis-results>
       </div>
 
-      <div *ngIf="!isAnalyzing && !analysisError && diagnosisResults.length === 0" class="placeholder-card large-placeholder fade-in">
+      <div *ngIf="!isAnalyzing && !analysisError && diagnosisResults.length === 0"
+        class="placeholder-card large-placeholder fade-in">
         <div class="placeholder-icon">📊</div>
         <h3>Analysis Report</h3>
         <p>Your detailed symptom analysis results will appear here.</p>
@@ -210,4 +209,3 @@
     </div>
   </div>
 </div>
-

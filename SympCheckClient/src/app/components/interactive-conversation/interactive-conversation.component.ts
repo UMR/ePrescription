@@ -19,11 +19,12 @@ import { environment } from '../../../environments/environment';
 export class InteractiveConversationComponent implements OnInit, OnDestroy, OnChanges {
   @Input() availableSymptoms: string[] = [];
   @Output() completed = new EventEmitter<void>();
-  
+
   currentQuestion: QuestionResponse | null = null;
   conversationSummary: string = '';
   isLoading: boolean = false;
   error: string | null = null;
+  errorStatus: number | null = null; // Capture HTTP status for 429 checks
 
   userTextAnswer: string = '';
   selectedOption: string = '';
@@ -43,7 +44,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
     private conversationState: ConversationStateService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   private logFlowError(context: string, err: unknown): void {
     if (!environment.enableVerboseLogging) {
@@ -120,7 +121,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
   selectSymptom(symptom: string): void {
     const input = this.userTextAnswer.toLowerCase();
     const lastSpaceIndex = input.lastIndexOf(' ');
-    
+
     // If there's text before the current word, keep it and append the selected symptom
     if (lastSpaceIndex !== -1) {
       this.userTextAnswer = this.userTextAnswer.substring(0, lastSpaceIndex + 1) + symptom;
@@ -128,7 +129,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
       // No previous words, just set the selected symptom
       this.userTextAnswer = symptom;
     }
-    
+
     this.filteredSymptoms = [];
   }
 
@@ -149,7 +150,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
     }
 
     this.error = null;
-    
+
     // Store the answer for display while loading
     this.lastSubmittedAnswer = answer;
 
@@ -160,7 +161,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
       this.userTextAnswer = '';
       this.selectedOption = '';
       this.numericAnswer = null;
-      
+
       // Fetch first follow-up question
       try {
         const result = await this.interactiveFlow.getFirstQuestion();
@@ -227,6 +228,25 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
   }
 
   /**
+   * Retry the last failed action (fetching question)
+   */
+  async retry(): Promise<void> {
+    if (this.isLoading) return;
+
+    // Clear error state before retrying
+    this.error = null;
+    this.errorStatus = null;
+
+    try {
+      const result = await this.interactiveFlow.retryFetchNextQuestion();
+      this.handleFlowResult(result);
+    } catch (err) {
+      this.logFlowError('Error retrying fetch', err);
+      this.error = 'Failed to retry. Please try again.';
+    }
+  }
+
+  /**
    * Show first question
    */
   private showFirstQuestion(): void {
@@ -271,6 +291,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
       this.cdr.markForCheck();
     } else if (result.action === 'error') {
       this.error = result.error;
+      this.errorStatus = result.errorStatus || null;
       this.currentQuestion = null;
       this.cdr.markForCheck();
     }

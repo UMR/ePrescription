@@ -4,8 +4,9 @@ import {
   ConversationState,
   ConversationPhase,
   INITIAL_CONVERSATION_STATE,
-  QUESTION_LIMITS,
+
 } from '../models/conversation.models';
+import { environment } from '../../environments/environment';
 
 /**
  * Manages conversation state machine and transitions
@@ -18,7 +19,7 @@ export class ConversationStateService {
   private stateSubject = new BehaviorSubject<ConversationState>(INITIAL_CONVERSATION_STATE);
   public state$: Observable<ConversationState> = this.stateSubject.asObservable();
 
-  constructor() {}
+  constructor() { }
 
   getState(): ConversationState {
     return this.stateSubject.value;
@@ -59,7 +60,7 @@ export class ConversationStateService {
     });
 
     // Return true if we've just completed the initial 5
-    return newTotal === QUESTION_LIMITS.INITIAL_LIMIT && current.remainingAdditionalQuestions === 0;
+    return newTotal === environment.questionLimits.initial && current.remainingAdditionalQuestions === 0;
   }
 
   /**
@@ -108,8 +109,8 @@ export class ConversationStateService {
     }
 
     // Calculate actual count respecting session cap
-    const questionsAlreadyAsked = QUESTION_LIMITS.INITIAL_LIMIT;
-    const remainingCapacity = QUESTION_LIMITS.SESSION_CAP - questionsAlreadyAsked;
+    const questionsAlreadyAsked = environment.questionLimits.initial;
+    const remainingCapacity = environment.questionLimits.sessionCap - questionsAlreadyAsked;
     const actualCount = Math.min(requestedCount, remainingCapacity);
 
     this.setState({
