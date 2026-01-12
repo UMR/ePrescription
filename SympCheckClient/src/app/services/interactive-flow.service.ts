@@ -15,6 +15,7 @@ export interface InteractiveFlowResult {
   action: 'show-question' | 'show-summary' | 'show-more-prompt' | 'show-count-prompt' | 'error';
   data?: any;
   error?: string;
+  errorStatus?: number;
 }
 
 /**
@@ -34,7 +35,7 @@ export class InteractiveFlowService {
     private conversationState: ConversationStateService,
     private conversation: ConversationService,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   /**
    * Start a new interactive conversation
@@ -65,7 +66,7 @@ export class InteractiveFlowService {
     const totalInteractions = this.conversation.getTotalInteractions();
 
     // Check if we've completed initial 5 questions and in normal phase
-    if (totalInteractions === 5 && state.phase === 'asking-questions') {
+    if (totalInteractions === environment.questionLimits.initial && state.phase === 'asking-questions') {
       this.conversationState.askForMoreQuestions();
       return {
         action: 'show-more-prompt',
@@ -99,7 +100,7 @@ export class InteractiveFlowService {
     const totalInteractions = this.conversation.getTotalInteractions();
 
     // Check if we've completed initial 5 questions
-    if (totalInteractions === 5 && newState.phase === 'asking-questions') {
+    if (totalInteractions === environment.questionLimits.initial && newState.phase === 'asking-questions') {
       this.conversationState.askForMoreQuestions();
       return {
         action: 'show-more-prompt',
@@ -134,6 +135,13 @@ export class InteractiveFlowService {
     return {
       action: 'show-count-prompt',
     };
+  }
+
+  /**
+   * Retry fetching the next question (used when previous fetch failed)
+   */
+  async retryFetchNextQuestion(): Promise<InteractiveFlowResult> {
+    return await this.fetchNextQuestion();
   }
 
   /**
@@ -205,12 +213,13 @@ export class InteractiveFlowService {
       }
 
       throw new Error('Unknown response type: ' + (response as any).type);
-    } catch (err) {
+    } catch (err: any) {
       this.logFlowError('Error fetching next question', err);
       this.ngZone.run(() => this.loadingSubject.next(false));
       return {
         action: 'error',
-        error: (err as any).message || 'Failed to fetch next question',
+        error: err.message || 'Failed to fetch next question',
+        errorStatus: err.status,
       };
     }
   }
@@ -268,8 +277,8 @@ export class InteractiveFlowService {
         state.remainingAdditionalQuestions > 0
           ? state.remainingAdditionalQuestions
           : state.additionalQuestionsRequested > 0
-          ? state.additionalQuestionsRequested
-          : undefined,
+            ? state.additionalQuestionsRequested
+            : undefined,
     };
   }
 

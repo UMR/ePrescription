@@ -29,7 +29,7 @@ import { DiagnosisCondition, DiagnosisRequest } from '../../models/api.models';
     InteractiveConversationComponent,
     DemographicsFormComponent,
     DiagnosisResultsComponent
-],
+  ],
   templateUrl: './symptom-form.component.html',
   styleUrl: './symptom-form.component.css',
 })
@@ -72,7 +72,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     private diagnosisService: DiagnosisService,
     private stateService: SymptomSessionStateService,
     private diagnosisCache: DiagnosisCacheService
-  ) {}
+  ) { }
 
   private logConversationEvent(message: string): void {
     if (!environment.enableVerboseLogging) {
@@ -98,7 +98,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     const initialEntry = this.initialSymptom
       ? [{ question: 'Initial Symptom', answer: this.initialSymptom }]
       : [];
-    
+
     this.liveConversationHistory = [...initialEntry, ...answers, ...skipped];
   }
 
@@ -115,13 +115,13 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       this.demographics = cachedState.demographics;
       this.currentStep = 3;
       this.isRestoredFromCache = true; // Skip conversation completion logic
-      
+
       // Rebuild liveConversationHistory from conversationSummary
       this.rebuildConversationHistory();
       this.logConversationEvent('Restored cached diagnosis state');
       this.cdr.detectChanges();
     }
-    
+
     this.subscribeToConversationStateUpdates();
   }
 
@@ -135,7 +135,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       if (this.isRestoredFromCache) {
         return;
       }
-      
+
       // Capture initial symptom when conversation starts
       if (state.initialSymptom && !this.initialSymptom) {
         this.initialSymptom = state.initialSymptom;
@@ -160,21 +160,21 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     if (this.isRestoredFromCache) {
       return;
     }
-    
+
     // Capture conversation summary
     const answers = this.interactiveFlow.getAnswers();
-    
+
     this.conversationSummary = answers
       .map((a, i) => `Q${i + 1}: ${a.Question}\nA: ${a.Answer}`)
       .join('\n\n');
 
     // Ensure live history is populated even after completion
     this.updateLiveHistory();
-    
+
     // Move to demographics step - wrap in ngZone to ensure change detection
     this.ngZone.run(() => {
       this.currentStep = 2;
-        this.logConversationEvent('Conversation complete, moving to demographics');
+      this.logConversationEvent('Conversation complete, moving to demographics');
       this.cdr.detectChanges();
     });
   }
@@ -198,12 +198,12 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
 
     this.isAnalyzing = true;
     this.analysisError = null;
-    
+
     // Ensure conversation history is preserved
     if (this.liveConversationHistory.length === 0) {
       this.rebuildConversationHistory();
     }
-    
+
     this.currentStep = 3; // Move to step 3 immediately to show spinner
     this.cdr.detectChanges(); // Force change detection to show spinner
 
@@ -226,7 +226,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       this.diagnosisResults = await this.ngZone.run(async () => {
         return await this.diagnosisService.analyzeSymptomsAndConversation(request);
       });
-      
+
       // Cache complete state before moving to step 3 (so it persists if user navigates to details)
       const stateToCache: CachedDiagnosisState = {
         initialSymptom: this.initialSymptom,
@@ -235,7 +235,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
         demographics: this.demographics
       };
       this.diagnosisCache.setDiagnosisState(stateToCache);
-      
+
       this.isAnalyzing = false;
       this.cdr.detectChanges();
     } catch (err) {
@@ -248,6 +248,13 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       this.isAnalyzing = false;
       this.cdr.detectChanges();
     }
+  }
+
+  /**
+   * Retry the analysis step
+   */
+  retryAnalysis(): void {
+    this.submitAnalysis();
   }
 
   /**
@@ -286,10 +293,10 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     if (this.conversationComponent) {
       this.conversationComponent.resetComponent();
     }
-    
+
     this.conversationState.reset();
     this.diagnosisCache.clearCache();
-    
+
     this.cdr.detectChanges();
   }
 
@@ -306,7 +313,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     // Parse the conversation summary back into Q&A pairs
     // Format: "Q1: Question text\nA: Answer text\n\nQ2: ..."
     const entries: Array<{ question: string; answer: string }> = [];
-    
+
     // Split by double newline to get individual Q&A blocks
     const blocks = this.conversationSummary.split('\n\n');
     for (const block of blocks) {
@@ -314,10 +321,10 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       if (lines.length >= 2) {
         // Extract question (remove "Q1: " prefix)
         const questionLine = lines[0];
-        const question = questionLine.includes(':') 
+        const question = questionLine.includes(':')
           ? questionLine.substring(questionLine.indexOf(':') + 1).trim()
           : questionLine.trim();
-        
+
         // Extract answer (remove "A: " prefix)
         const answerLine = lines[1];
         const answer = answerLine.includes(':')
@@ -326,7 +333,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
         entries.push({ question, answer });
       }
     }
-    
+
     this.liveConversationHistory = entries;
   }
 
