@@ -36,14 +36,23 @@ export class DemographicsFormComponent implements OnInit {
   };
 
   currentStep: number = 1;
-  totalSteps: number = 5;
+  totalSteps: number = 2;
 
   constructor() {}
 
   ngOnInit(): void {}
 
   nextStep(): void {
-    if (this.currentStep < this.totalSteps) {
+    if (this.currentStep === 1) {
+      if (
+        !this.demographics.age ||
+        !this.demographics.gender ||
+        !this.demographics.height ||
+        !this.demographics.weight
+      ) {
+        alert('Please fill in all basic information (Age, Gender, Height, Weight).');
+        return;
+      }
       this.currentStep++;
     }
   }
@@ -59,27 +68,24 @@ export class DemographicsFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // Validate all vitals are filled
+    // Validate vitals
     if (
-      !this.demographics.age ||
       !this.demographics.temperature ||
       !this.demographics.bloodPressureSystolic ||
       !this.demographics.bloodPressureDiastolic ||
       !this.demographics.heartRate
     ) {
-      alert('Please fill in all vital information');
+      alert('Please fill in all vital information.');
       return;
     }
     this.submit.emit(this.demographics);
   }
 
   populateRandom(): void {
+    // Only populate vitals (Step 2)
     this.demographics = {
-      age: Math.floor(Math.random() * 63) + 18,
-      gender: Math.random() > 0.5 ? 'male' : 'female',
-      height: Math.floor(Math.random() * 51) + 150,
-      weight: Math.floor(Math.random() * 51) + 50,
-      temperature: Math.round((Math.random() * 3 + 36) * 10) / 10,
+      ...this.demographics, // Keep existing basic info
+      temperature: Math.round((Math.random() * 3 + 99) * 10) / 10,
       bloodPressureSystolic: Math.floor(Math.random() * 41) + 100,
       bloodPressureDiastolic: Math.floor(Math.random() * 31) + 60,
       heartRate: Math.floor(Math.random() * 41) + 60,
@@ -88,6 +94,11 @@ export class DemographicsFormComponent implements OnInit {
   }
 
   reset(): void {
+    // Reset to defaults or clear? 
+    // Going with defaults as per original implementation, but maybe less "pre-filled" logic if requested.
+    // User didn't explicitly ask to remove defaults, just structural change.
+    // However, for "Populate Random" to be useful, it implies fields might start empty or user wants to change them.
+    // I will keep the original reset logic for safety but ensure it resets everything.
     this.demographics = {
       age: 44,
       gender: 'male',

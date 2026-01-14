@@ -20,7 +20,7 @@ export class DiagnosisService {
    */
   async analyzeSymptomsAndConversation(request: DiagnosisRequest): Promise<DiagnosisCondition[]> {
     try {
-      // Convert to backend format
+      
       const backendRequest = {
         Symptom: request.Symptom,
         Answers: request.Answers,
@@ -48,7 +48,9 @@ export class DiagnosisService {
       }
 
       // Filter by configured threshold
-      return conditions.filter((c) => (c as any).score >= this.threshold);
+      return conditions
+        .filter((c) => c.score >= this.threshold)
+        .sort((a, b) => b.score - a.score);
     } catch (err) {
       this.logDiagnosisError(err);
       throw err;
