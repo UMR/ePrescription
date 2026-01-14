@@ -231,19 +231,8 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
    * Retry the last failed action (fetching question)
    */
   async retry(): Promise<void> {
-    if (this.isLoading) return;
-
-    // Clear error state before retrying
-    this.error = null;
-    this.errorStatus = null;
-
-    try {
-      const result = await this.interactiveFlow.retryFetchNextQuestion();
-      this.handleFlowResult(result);
-    } catch (err) {
-      this.logFlowError('Error retrying fetch', err);
-      this.error = 'Failed to retry. Please try again.';
-    }
+    // User requested to restart if error occurs
+    this.resetComponent();
   }
 
   /**
@@ -302,9 +291,7 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
     this.destroy$.complete();
   }
 
-  /**
-   * Reset component to initial state
-   */
+
   resetComponent(): void {
     this.currentQuestion = null;
     this.conversationSummary = '';
@@ -315,9 +302,41 @@ export class InteractiveConversationComponent implements OnInit, OnDestroy, OnCh
     this.numericAnswer = null;
     this.filteredSymptoms = [];
     this.initialSymptomSubmitted = false;
-    this.state = null;
+    
+    // Reset state via service
+    this.interactiveFlow.reset();
+    
+    // reset() in flow service also resets conversationState, 
+    // but we can call it explicitly if we want to be sure, or just rely on flow.
+    // However, flow reset cleans up everything.
+    
+    // Re-initialize local state from state service (which is reset by flow.reset -> conversationState.reset)
+    this.state = this.conversationState.getState();
+
     // Show first question for initial symptom input
     this.showFirstQuestion();
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Check if the current answer is invalid/empty
+   */
+  get isAnswerInvalid(): boolean {
+    if (!this.currentQuestion) return true;
+
+    // Multiple choice
+    if (this.currentQuestion.options && this.currentQuestion.options.length > 0) {
+      return !this.selectedOption;
+    }
+
+    // Text input
+    return !this.userTextAnswer || !this.userTextAnswer.trim();
+  }
+
+  /**
+   * Check if the numeric answer for "how many questions" is invalid
+   */
+  get isCountInvalid(): boolean {
+    return this.numericAnswer === null || this.numericAnswer < 1 || this.numericAnswer > 10;
   }
 }

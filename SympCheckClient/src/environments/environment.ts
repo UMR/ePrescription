@@ -8,4 +8,8 @@ export const environment = {
     conditions: '/api/diagnosis/condition',
     interactive: '/api/diagnosis/interactive',
   },
+  questionLimits: {
+    initial: 5,
+    sessionCap: 15,
+  },
 };

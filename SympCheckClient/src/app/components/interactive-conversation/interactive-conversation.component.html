@@ -34,12 +34,11 @@
 
       <!-- Text Answer -->
       <div *ngIf="!currentQuestion.options || currentQuestion.options.length === 0" class="text-answer">
-        <textarea [(ngModel)]="userTextAnswer" (ngModelChange)="filterSymptoms()" placeholder="Enter your answer..."
+        <textarea [(ngModel)]="userTextAnswer" (ngModelChange)="filterSymptoms()" 
           rows="4"></textarea>
 
         <!-- Guidance Overlay for Initial Symptom (Visible when empty) -->
         <div *ngIf="!initialSymptomSubmitted && !userTextAnswer" class="guidance-overlay fade-in">
-          <div class="guidance-icon">ℹ️</div>
           <p>For the most accurate results, please describe your symptoms and conditions clearly. Only input medical symptoms and conditions.</p>
         </div>
 
@@ -68,7 +67,7 @@
           <button type="button" (click)="skipQuestion()" class="btn-skip" [disabled]="!initialSymptomSubmitted">
             Skip
           </button>
-          <button type="button" (click)="submitAnswer()" class="btn-submit">
+          <button type="button" (click)="submitAnswer()" class="btn-submit" [disabled]="isAnswerInvalid">
             Submit Answer
           </button>
         </ng-container>
@@ -112,7 +111,7 @@
         </svg>
         <p>Getting next question...</p>
       </div>
-      <button type="button" (click)="respondToCountPrompt()" class="btn-submit" *ngIf="!isLoading">
+      <button type="button" (click)="respondToCountPrompt()" class="btn-submit" *ngIf="!isLoading" [disabled]="isCountInvalid">
         Continue
       </button>
     </div>

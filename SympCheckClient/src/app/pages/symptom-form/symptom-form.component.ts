@@ -34,7 +34,7 @@ import { DiagnosisCondition, DiagnosisRequest } from '../../models/api.models';
   styleUrl: './symptom-form.component.css',
 })
 export class SymptomFormComponent implements OnInit, OnDestroy {
-  // Component reference
+
   @ViewChild('conversationComponent') conversationComponent: InteractiveConversationComponent | undefined;
 
   // Step management
@@ -81,11 +81,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     console.info(`[SymptomForm] ${message}`);
   }
 
-  /**
-   * Build the live conversation history from the interactive flow service.
-   * This is used both during the conversation and after completion to ensure
-   * the sidebar and step 2 accordion have the final answers.
-   */
+
   private updateLiveHistory(): void {
     const answers = this.interactiveFlow.getAnswers().map((a) => ({
       question: a.Question,
@@ -133,6 +129,14 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     // Subscribe to conversation state to detect completion
     this.conversationState.state$.pipe(takeUntil(this.destroy$)).subscribe((state) => {
       if (this.isRestoredFromCache) {
+        return;
+      }
+
+      // Detect reset: if phase is initial and no symptom, clear local state
+      if (state.phase === 'initial' && !state.initialSymptom) {
+        this.initialSymptom = '';
+        this.liveConversationHistory = [];
+        this.cdr.detectChanges();
         return;
       }
 
@@ -265,7 +269,7 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
     const parts: string[] = [];
     if (this.demographics.age) parts.push(`Age: ${this.demographics.age}`);
     if (this.demographics.gender) parts.push(`Gender: ${this.demographics.gender}`);
-    if (this.demographics.temperature) parts.push(`Temperature: ${this.demographics.temperature}°C`);
+    if (this.demographics.temperature) parts.push(`Temperature: ${this.demographics.temperature}°F`);
     if (this.demographics.bloodPressureSystolic && this.demographics.bloodPressureDiastolic) {
       parts.push(`BP: ${this.demographics.bloodPressureSystolic}/${this.demographics.bloodPressureDiastolic}`);
     }
