@@ -1370,7 +1370,7 @@ namespace Prescription.Application.Services
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm.ToLower();
-                query = query.Where(c => c.Description.Contains(term, StringComparison.CurrentCultureIgnoreCase));
+                query = query.Where(c => c.Description.ToLower() == term);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
