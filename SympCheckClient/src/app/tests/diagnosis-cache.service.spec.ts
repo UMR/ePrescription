@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { DiagnosisCacheService, CachedDiagnosisState } from './diagnosis-cache.service';
+import { DiagnosisCacheService, CachedDiagnosisState } from '../services/diagnosis-cache.service';
 import { DiagnosisCondition } from '../models/api.models';
 
 describe('DiagnosisCacheService', () => {

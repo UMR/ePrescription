@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ConditionService, ConditionDetailResponse } from './condition.service';
+import { ConditionService, ConditionDetailResponse } from '../services/condition.service';
 import { environment } from '../../environments/environment';
 
 describe('ConditionService', () => {

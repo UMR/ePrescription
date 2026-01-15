@@ -314,9 +314,9 @@ export class SymptomFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Parse the conversation summary back into Q&A pairs
-    // Format: "Q1: Question text\nA: Answer text\n\nQ2: ..."
     const entries: Array<{ question: string; answer: string }> = [];
+    entries.push({ question: 'Initial Symptom', answer: this.initialSymptom });
+  
 
     // Split by double newline to get individual Q&A blocks
     const blocks = this.conversationSummary.split('\n\n');

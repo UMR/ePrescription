@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { vi } from 'vitest';
-import { InteractiveFlowService, InteractiveFlowResult } from './interactive-flow.service';
-import { ConversationStateService } from './conversation-state.service';
-import { ConversationService } from './conversation.service';
+import { InteractiveFlowService, InteractiveFlowResult } from '../services/interactive-flow.service';
+import { ConversationStateService } from '../services/conversation-state.service';
+import { ConversationService } from '../services/conversation.service';
 import { environment } from '../../environments/environment';
 import {
   InteractiveResponse,

@@ -29,9 +29,9 @@ export class DiagnosisResultsComponent {
     return this.expandedConditions.has(index);
   }
 
-  viewDetails(icd: string): void {
+  viewDetails(label: string): void {
     // Find condition to pass name along with navigation
-    const condition = this.conditions.find(c => c.icd === icd);
+    const condition = this.conditions.find(c => c.label === label);
     if (!condition) return;
     
     // Create URL-friendly slug from condition name
@@ -42,8 +42,8 @@ export class DiagnosisResultsComponent {
     
     // Navigate to condition details page using condition name in URL
     this.router.navigate(['/conditions', nameSlug], {
-      queryParams: { icd: icd },
-      state: { conditionName: condition.label, icdCode: icd }
+      queryParams: { label: label },
+      state: { conditionName: condition.label, icdCode: condition.icd }
     });
   }
 }
