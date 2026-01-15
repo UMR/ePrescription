@@ -44,14 +44,14 @@ export class ConditionDetailsComponent implements OnInit, OnDestroy {
       this.conditionName = navigation.extras.state['conditionName'] || '';
     }
 
-    // Get ICD code from query params instead of route param
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const icd = params['icd'];
-      if (icd) {
-        this.loadConditionDetails(icd);
+    // Get condition ID from route params
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const id = params['id'];
+      if (id) {
+        this.loadConditionDetails(id);
       } else {
         this.error = true;
-        this.errorMessage = 'No condition ICD code provided';
+        this.errorMessage = 'No condition identifier provided';
         this.loading = false;
       }
     });
@@ -62,13 +62,13 @@ export class ConditionDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadConditionDetails(id: string): void {
+  loadConditionDetails(label: string): void {
     this.loading = true;
     this.error = false;
     console.log('Starting load, loading =', this.loading);
 
     this.conditionService
-      .getConditionDetails(id)
+      .getConditionDetails(label)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -101,9 +101,9 @@ export class ConditionDetailsComponent implements OnInit, OnDestroy {
   }
 
   retry(): void {
-    const icd = this.route.snapshot.queryParams['icd'];
-    if (icd) {
-      this.loadConditionDetails(icd);
+    const id = this.route.snapshot.params['id'];
+    if (id) {
+      this.loadConditionDetails(id);
     }
   }
 
