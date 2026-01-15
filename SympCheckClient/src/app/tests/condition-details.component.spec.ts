@@ -15,13 +15,13 @@ describe('ConditionDetailsComponent', () => {
   let conditionService: any;
   let themeService: any;
 
-  const mockQueryParams$ = new Subject<any>();
+  const mockParams$ = new Subject<any>();
   const mockThemeMode$ = new Subject<string>();
 
   beforeEach(async () => {
     activatedRoute = {
-      queryParams: mockQueryParams$.asObservable(),
-      snapshot: { queryParams: { icd: 'J00' } }
+      params: mockParams$.asObservable(),
+      snapshot: { params: { id: 'common-cold' } }
     };
 
     router = {
@@ -63,13 +63,13 @@ describe('ConditionDetailsComponent', () => {
     expect(component.conditionName).toBe('Common Cold');
   });
 
-  it('should load condition details when ICD query param is present', () => {
-    const mockDetails = { id: 'J00', name: 'Common Cold', description: 'Test' };
+  it('should load condition details when id route param is present', () => {
+    const mockDetails = { id: 'cond-1', name: 'Common Cold', description: 'Test' };
     conditionService.getConditionDetails.mockReturnValue(of(mockDetails));
     
-    mockQueryParams$.next({ icd: 'J00' });
+    mockParams$.next({ id: 'common-cold' });
     
-    expect(conditionService.getConditionDetails).toHaveBeenCalledWith('J00');
+    expect(conditionService.getConditionDetails).toHaveBeenCalledWith('common-cold');
     expect(component.condition).toEqual(mockDetails);
     expect(component.loading).toBe(false);
   });
@@ -77,18 +77,18 @@ describe('ConditionDetailsComponent', () => {
   it('should handle error when loading fails', () => {
     conditionService.getConditionDetails.mockReturnValue(throwError(() => new Error('API Error')));
     
-    mockQueryParams$.next({ icd: 'ERROR' });
+    mockParams$.next({ id: 'error-slug' });
     
     expect(component.error).toBe(true);
     expect(component.errorMessage).toContain('Failed to load');
     expect(component.loading).toBe(false);
   });
 
-  it('should handle missing ICD code', () => {
-    mockQueryParams$.next({});
+  it('should handle missing condition identifier', () => {
+    mockParams$.next({});
     
     expect(component.error).toBe(true);
-    expect(component.errorMessage).toBe('No condition ICD code provided');
+    expect(component.errorMessage).toBe('No condition identifier provided');
     expect(component.loading).toBe(false);
   });
 
@@ -106,7 +106,7 @@ describe('ConditionDetailsComponent', () => {
   it('should retry loading details', () => {
     conditionService.getConditionDetails.mockReturnValue(of({}));
     component.retry();
-    expect(conditionService.getConditionDetails).toHaveBeenCalledWith('J00');
+    expect(conditionService.getConditionDetails).toHaveBeenCalledWith('common-cold');
   });
 
   it('should toggle theme using theme service', () => {

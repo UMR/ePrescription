@@ -29,11 +29,17 @@ export class ConditionService {
   constructor(private http: HttpClient) {}
 
   getConditionDetails(id: string): Observable<ConditionDetailResponse> {
-    // Convert slug back to proper format for API
-    const conditionName = id
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    // Convert slug back to proper format for API if it looks like a slug
+    // (e.g., 'vitamin-c-deficiency-scurvy' -> 'Vitamin C Deficiency (Scurvy)')
+    // NOTE: The previous logic was simple capitalization.
+    // If id contains hyphens, it's likely a slug.
+    let conditionName = id;
+    if (id.includes('-')) {
+      conditionName = id
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
 
     const encodedId = encodeURIComponent(conditionName);
     return this.http.get<ConditionDetailResponse>(`${this.apiUrl}/${encodedId}`);

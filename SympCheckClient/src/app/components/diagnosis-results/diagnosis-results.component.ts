@@ -42,7 +42,6 @@ export class DiagnosisResultsComponent {
     
     // Navigate to condition details page using condition name in URL
     this.router.navigate(['/conditions', nameSlug], {
-      queryParams: { label: label },
       state: { conditionName: condition.label, icdCode: condition.icd }
     });
   }

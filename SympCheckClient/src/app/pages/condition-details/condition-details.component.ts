@@ -44,14 +44,14 @@ export class ConditionDetailsComponent implements OnInit, OnDestroy {
       this.conditionName = navigation.extras.state['conditionName'] || '';
     }
 
-    // Get ICD code from query params instead of route param
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      const label = params['label'];
-      if (label) {
-        this.loadConditionDetails(label);
+    // Get condition ID from route params
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const id = params['id'];
+      if (id) {
+        this.loadConditionDetails(id);
       } else {
         this.error = true;
-        this.errorMessage = 'No condition label provided';
+        this.errorMessage = 'No condition identifier provided';
         this.loading = false;
       }
     });
@@ -101,9 +101,9 @@ export class ConditionDetailsComponent implements OnInit, OnDestroy {
   }
 
   retry(): void {
-    const label = this.route.snapshot.queryParams['label'];
-    if (label) {
-      this.loadConditionDetails(label);
+    const id = this.route.snapshot.params['id'];
+    if (id) {
+      this.loadConditionDetails(id);
     }
   }
 
