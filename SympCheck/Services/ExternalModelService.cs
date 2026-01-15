@@ -408,7 +408,7 @@ namespace SympAPI.Services
                             content = $@"
         ### Required JSON fields:
         - ""Id"": the condition ID (same as input)
-        - ""Name"": the official disease/condition name
+        - ""Name"": the official disease/condition name (icd or any globally recognized term , don't add any explanatory text )
         - ""Specialties"": an array of relevant medical specialties
         - ""Description"": 2–4 sentence summary
         - ""CommonCauses"": array of common medical causes
@@ -666,7 +666,7 @@ These are hypotheses for consideration only, not confirmed diagnoses.
 ### OUTPUT REQUIREMENTS
 - Return ONLY a valid JSON array
 - Each item must include:
-  - Label: condition name
+  - Label: condition name (icd or any globally recognized term , don't add any explanatory text )
   - Likelihood: a qualitative likelihood label (""high"", ""moderate"", ""low"")
   - Score: estimated likelihood between 0 and 1 (rounded to two decimals, not diagnostic certainty)
   - Icd: ICD-10 concept code only (e.g., I20, G43 — no subcodes)
