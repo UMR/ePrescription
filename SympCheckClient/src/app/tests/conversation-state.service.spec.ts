@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ConversationStateService } from './conversation-state.service';
+import { ConversationStateService } from '../services/conversation-state.service';
 import { INITIAL_CONVERSATION_STATE, QUESTION_LIMITS, ConversationState } from '../models/conversation.models';
 
 describe('ConversationStateService', () => {

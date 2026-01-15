@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SymptomSessionStateService, SymptomSessionState } from './symptom-session-state.service';
+import { SymptomSessionStateService, SymptomSessionState } from '../services/symptom-session-state.service';
 
 describe('SymptomSessionStateService', () => {
   let service: SymptomSessionStateService;
