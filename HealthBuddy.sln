@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -32,6 +32,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrescriptionClient", "PrescriptionClient", "{7ED1FA47-AAC5-4D8B-976F-FF8C12D2A15B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prescription.Client", "Prescription.Client\Prescription.Client.csproj", "{6311239E-8F5B-4CCA-B66D-FDA8D44BFD52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SympCheck", "SympCheck\SympCheck.csproj", "{78AEDB1C-BF13-4A9F-9803-407B27063EEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SympCheckClient", "SympCheckClient\SympCheckClient.csproj", "{BED62209-4C80-4B21-BEC3-A905BA95FEAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +83,14 @@ Global
 		{6311239E-8F5B-4CCA-B66D-FDA8D44BFD52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6311239E-8F5B-4CCA-B66D-FDA8D44BFD52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6311239E-8F5B-4CCA-B66D-FDA8D44BFD52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78AEDB1C-BF13-4A9F-9803-407B27063EEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78AEDB1C-BF13-4A9F-9803-407B27063EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78AEDB1C-BF13-4A9F-9803-407B27063EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78AEDB1C-BF13-4A9F-9803-407B27063EEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BED62209-4C80-4B21-BEC3-A905BA95FEAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BED62209-4C80-4B21-BEC3-A905BA95FEAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BED62209-4C80-4B21-BEC3-A905BA95FEAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BED62209-4C80-4B21-BEC3-A905BA95FEAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +110,8 @@ Global
 		{6E4488E6-1D66-4828-BC04-08EC835C66B0} = {18777086-24BF-4905-B884-A3797D56A848}
 		{7ED1FA47-AAC5-4D8B-976F-FF8C12D2A15B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{6311239E-8F5B-4CCA-B66D-FDA8D44BFD52} = {7ED1FA47-AAC5-4D8B-976F-FF8C12D2A15B}
+		{78AEDB1C-BF13-4A9F-9803-407B27063EEC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{BED62209-4C80-4B21-BEC3-A905BA95FEAC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01295AD3-87DF-4301-9F0C-B7B2F1B8EF19}

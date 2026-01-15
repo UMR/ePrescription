@@ -1,0 +1,211 @@
+<div class="symptom-form-container">
+  <!-- Step 1: Interactive Conversation -->
+  <div *ngIf="currentStep === 1" class="step-layout fade-in">
+    <div class="form-section">
+      <app-interactive-conversation #conversationComponent [availableSymptoms]="availableSymptoms"
+        (completed)="onConversationComplete()"></app-interactive-conversation>
+      <div class="step-actions">
+        <button type="button" (click)="resetForm()" class="btn-secondary">Reset</button>
+      </div>
+    </div>
+    <div class="results-section">
+      <div *ngIf="liveConversationHistory.length > 0; else conversationPlaceholder" class="history-card">
+        <div class="history-header">
+          <h3>Conversation History</h3>
+          <p class="muted">Live view of what you’ve answered so far</p>
+        </div>
+        <div class="history-list">
+          <div *ngFor="let item of liveConversationHistory; let idx = index" class="history-item">
+            <div class="history-index">Q{{ idx + 1 }}</div>
+            <div class="history-content">
+              <div class="history-question">{{ item.question }}</div>
+              <div class="history-answer">{{ item.answer }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #conversationPlaceholder>
+        <div class="placeholder-card">
+          <h3>Conversation History</h3>
+          <p>As you answer questions, your conversation will appear here.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Step 2: Demographics Collection -->
+  <div *ngIf="currentStep === 2" class="step-layout fade-in">
+    <div class="form-section">
+      <div class="step-intro">
+        <h2>Vital Information</h2>
+        <p>Please provide your demographic and vital information to complete the analysis.</p>
+
+        <!-- Initial Symptom Card with accordion -->
+        <div class="info-card-wrapper">
+          <button type="button" class="card-accordion-header" (click)="isSymptomExpanded = !isSymptomExpanded">
+            <div class="header-icon">🩺</div>
+            <div class="header-content">
+              <h3>Initial Symptom</h3>
+              <p class="muted">Primary complaint</p>
+            </div>
+            <span class="accordion-icon" [class.expanded]="isSymptomExpanded">▼</span>
+          </button>
+          <div class="card-body" *ngIf="isSymptomExpanded">
+            <p class="symptom-text">{{ initialSymptom }}</p>
+          </div>
+        </div>
+
+        <!-- Conversation History with accordion -->
+        <div class="info-card-wrapper">
+          <button type="button" class="card-accordion-header" (click)="isHistoryExpanded = !isHistoryExpanded">
+            <div class="header-icon">💬</div>
+            <div class="header-content">
+              <h3>Conversation History</h3>
+              <p class="muted">{{ liveConversationHistory.length }} questions answered</p>
+            </div>
+            <span class="accordion-icon" [class.expanded]="isHistoryExpanded">▼</span>
+          </button>
+          <div class="history-list" *ngIf="isHistoryExpanded">
+            <div *ngFor="let item of liveConversationHistory; let idx = index" class="history-item">
+              <div class="history-index">Q{{ idx + 1 }}</div>
+              <div class="history-content">
+                <div class="history-question">{{ item.question }}</div>
+                <div class="history-answer">{{ item.answer }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <app-demographics-form (submit)="onDemographicsSubmit($event)"></app-demographics-form>
+      <div class="step-actions">
+        <button type="button" (click)="resetForm()" class="btn-secondary">Start Over</button>
+      </div>
+    </div>
+    <div class="results-section">
+      <div class="placeholder-card large-placeholder">
+        <div class="placeholder-icon">📋</div>
+        <h3>Analysis Report</h3>
+        <p>Complete your demographic information to generate a detailed symptom analysis report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Results Display -->
+  <div *ngIf="currentStep === 3" class="step-layout fade-in">
+    <div class="form-section">
+      <div class="step-intro">
+        <h2>Symptoms</h2>
+        <p>Your detailed symptom analysis is shown on the right.</p>
+
+        <!-- Initial Symptom Card with accordion -->
+        <div class="info-card-wrapper">
+          <button type="button" class="card-accordion-header" (click)="isSymptomExpanded = !isSymptomExpanded">
+            <div class="header-icon">🩺</div>
+            <div class="header-content">
+              <h3>Initial Symptom</h3>
+              <p class="muted">Primary complaint</p>
+            </div>
+            <span class="accordion-icon" [class.expanded]="isSymptomExpanded">▼</span>
+          </button>
+          <div class="card-body" *ngIf="isSymptomExpanded">
+            <p class="symptom-text">{{ initialSymptom }}</p>
+          </div>
+        </div>
+
+        <!-- Conversation History with accordion -->
+        <div class="info-card-wrapper">
+          <button type="button" class="card-accordion-header" (click)="isHistoryExpanded = !isHistoryExpanded">
+            <div class="header-icon">💬</div>
+            <div class="header-content">
+              <h3>Conversation History</h3>
+              <p class="muted">{{ liveConversationHistory.length }} questions answered</p>
+            </div>
+            <span class="accordion-icon" [class.expanded]="isHistoryExpanded">▼</span>
+          </button>
+          <div class="history-list" *ngIf="isHistoryExpanded">
+            <div *ngFor="let item of liveConversationHistory; let idx = index" class="history-item">
+              <div class="history-index">Q{{ idx + 1 }}</div>
+              <div class="history-content">
+                <div class="history-question">{{ item.question }}</div>
+                <div class="history-answer">{{ item.answer }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demographics & Vitals Card with accordion -->
+        <div *ngIf="demographics" class="info-card-wrapper">
+          <button type="button" class="card-accordion-header"
+            (click)="isDemographicsExpanded = !isDemographicsExpanded">
+            <div class="header-icon">👤</div>
+            <div class="header-content">
+              <h3>Demographics & Vitals</h3>
+              <p class="muted">Patient information</p>
+            </div>
+            <span class="accordion-icon" [class.expanded]="isDemographicsExpanded">▼</span>
+          </button>
+          <div class="demographics-grid" *ngIf="isDemographicsExpanded">
+            <div class="demo-item" *ngIf="demographics.age">
+              <div class="demo-label">Age</div>
+              <div class="demo-value">{{ demographics.age }} years</div>
+            </div>
+            <div class="demo-item" *ngIf="demographics.gender">
+              <div class="demo-label">Gender</div>
+              <div class="demo-value">{{ demographics.gender | titlecase }}</div>
+            </div>
+            <div class="demo-item" *ngIf="demographics.height">
+              <div class="demo-label">Height</div>
+              <div class="demo-value">{{ demographics.height }} cm</div>
+            </div>
+            <div class="demo-item" *ngIf="demographics.weight">
+              <div class="demo-label">Weight</div>
+              <div class="demo-value">{{ demographics.weight }} kg</div>
+            </div>
+            <div class="demo-item vital" *ngIf="demographics.temperature">
+              <div class="demo-label">🌡️ Temperature</div>
+              <div class="demo-value">{{ demographics.temperature }}°F</div>
+            </div>
+            <div class="demo-item vital"
+              *ngIf="demographics.bloodPressureSystolic && demographics.bloodPressureDiastolic">
+              <div class="demo-label">❤️ Blood Pressure</div>
+              <div class="demo-value">{{ demographics.bloodPressureSystolic }}/{{ demographics.bloodPressureDiastolic }}
+              </div>
+            </div>
+            <div class="demo-item vital" *ngIf="demographics.heartRate">
+              <div class="demo-label">💓 Heart Rate</div>
+              <div class="demo-value">{{ demographics.heartRate }} bpm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button type="button" (click)="resetForm()" class="btn-primary">Analyze Another Symptom</button>
+      </div>
+    </div>
+    <div class="results-section">
+      <div *ngIf="isAnalyzing" class="loading-state fade-in">
+        <svg class="ecg" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true">
+          <path
+            d="M0 20 L30 20 L40 20 L45 5 L55 35 L65 10 L75 30 L85 20 L120 20 L130 20 L135 8 L145 32 L155 12 L165 28 L175 20 L200 20" />
+        </svg>
+        <p>Analyzing...</p>
+      </div>
+
+      <div *ngIf="analysisError" class="error-alert fade-in">
+        <p>{{ analysisError }}</p>
+        <button (click)="retryAnalysis()" class="btn-secondary retry-btn">Retry Analysis</button>
+      </div>
+
+      <div *ngIf="!isAnalyzing && !analysisError && diagnosisResults.length > 0" class="results-container fade-in">
+        <app-diagnosis-results [conditions]="diagnosisResults"></app-diagnosis-results>
+      </div>
+
+      <div *ngIf="!isAnalyzing && !analysisError && diagnosisResults.length === 0"
+        class="placeholder-card large-placeholder fade-in">
+        <div class="placeholder-icon">📊</div>
+        <h3>Analysis Report</h3>
+        <p>Your detailed symptom analysis results will appear here.</p>
+      </div>
+    </div>
+  </div>
+</div>

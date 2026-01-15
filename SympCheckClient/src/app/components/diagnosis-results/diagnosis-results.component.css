@@ -1,0 +1,273 @@
+.diagnosis-results {
+  width: 100%;
+}
+
+h2 {
+  color: var(--text);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+  background: var(--panel);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.conditions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.condition-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.condition-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.15);
+}
+
+.condition-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.condition-header:hover {
+  background: rgba(129, 140, 248, 0.05);
+}
+
+.condition-header.expanded {
+  background: rgba(129, 140, 248, 0.08);
+  border-bottom: 1px solid var(--border);
+}
+
+.condition-title {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.title-info {
+  flex: 1;
+}
+
+.condition-title h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.physician-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.physician-badge svg {
+  opacity: 0.8;
+}
+
+.score-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-right: 1rem;
+}
+
+.score-badge.high-risk {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+.score-badge.medium-risk {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.score-badge.low-risk {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.toggle-icon {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.condition-header.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.condition-details {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.emergency-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(153, 27, 27, 0.12) 100%);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.emergency-icon {
+  font-size: 1.5rem;
+}
+
+.emergency-card h4 {
+  margin: 0 0 0.25rem 0;
+  color: #ef4444;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.emergency-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.detail-section h4 {
+  color: var(--accent);
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.detail-section p {
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.reasoning-section {
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.reasoning-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.reasoning-section h4 svg {
+  opacity: 0.8;
+}
+
+.reasoning-section p {
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.btn-details {
+  background: var(--condition-view-btn-gradient);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
+.btn-details:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+/* Disclaimer Card */
+.disclaimer-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-left: 4px solid #f59e0b;
+  border-radius: 12px;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.disclaimer-icon {
+  flex-shrink: 0;
+  color: #f59e0b;
+  opacity: 0.9;
+}
+
+.disclaimer-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.disclaimer-content p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
