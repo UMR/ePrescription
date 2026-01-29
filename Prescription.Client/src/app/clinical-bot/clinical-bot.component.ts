@@ -2,7 +2,7 @@ import { Component, signal, computed, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { ClinicalChatService } from '../services/clinical-chat.service';
+import { ClinicalChatService, MeetingNotesRequest, MeetingNotesResponse } from '../services/clinical-chat.service';
 import { PrescriptionService } from '../services/prescription.service';
 import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
 import { SpeechRecordingState, SpeechError, RealtimeTextData, SegmentCompleteData } from '../models/speech-to-text.model';
@@ -325,6 +325,32 @@ Plan:
       this.baseText.set(newBaseText);
       this.clinicalNote.set(newBaseText);
     }
+  }
+
+  // In your component
+  generateMeetingSummary() {
+    const request: MeetingNotesRequest = {
+      meetingNotes: this.clinicalNote(),
+      language: 'en', // or 'bn' for Bengali
+      summaryLength: 'medium',
+      meetingTitle: 'Clinical Consultation',
+      meetingDate: new Date().toISOString()
+    };
+
+    this.clinicalChatService.summarizeMeetingNotes(request)
+      .subscribe({
+        next: (response: MeetingNotesResponse) => {
+          console.log('Meeting summary:', response);
+          // Process the response
+          console.log('Summary:', response.summary);
+          console.log('Key Points:', response.keyPoints);
+          console.log('Action Items:', response.actionItems);
+          console.log('Decisions:', response.decisions);
+        },
+        error: (error) => {
+          console.error('Error generating meeting summary:', error);
+        }
+      });
   }
 
   /**

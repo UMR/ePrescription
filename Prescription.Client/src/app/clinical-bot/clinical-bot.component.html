@@ -6,9 +6,7 @@
       <span class="app-title">AI Clinical Note Processor</span>
     </div>
     <div class="nav-right">
-      <span class="nav-subtitle"
-        >Transform clinical notes into structured prescription data</span
-      >
+      <span class="nav-subtitle">Transform clinical notes into structured prescription data</span>
     </div>
   </header>
 
@@ -21,67 +19,63 @@
     <div class="panel panel-input">
       <div class="panel-header">
         <div class="panel-title-bar">
-          <span class="panel-title"
-            ><i class="fa-solid fa-file-medical"></i> Clinical Note Input
-            (Multi-Language)</span
-          >
-          <app-speech-recorder
-            [disabled]="_isStreaming || _isProcessing"
-            [showLivePreview]="true"
-            (transcriptionChange)="onSpeechTranscription($event)"
-            (realtimeText)="onRealtimeText($event)"
-            (segmentComplete)="onSegmentComplete($event)"
-            (recordingStateChange)="onRecordingStateChange($event)"
-            (error)="onSpeechError($event)"
-          />
+          <span class="panel-title">
+            <i class="fa-solid fa-file-medical"></i> Clinical Note Input
+            (Multi-Language)
+          </span>
+          <app-speech-recorder [disabled]="_isStreaming || _isProcessing"
+                               [showLivePreview]="true"
+                               (transcriptionChange)="onSpeechTranscription($event)"
+                               (realtimeText)="onRealtimeText($event)"
+                               (segmentComplete)="onSegmentComplete($event)"
+                               (recordingStateChange)="onRecordingStateChange($event)"
+                               (error)="onSpeechError($event)" />
         </div>
 
         <div class="panel-actions">
-            <button
-              type="button"
-              class="btn-lang"
-              (click)="loadSampleNote()"
-              [disabled]="_isStreaming || _isProcessing"
-            >
-              <span class="lang-flag">🇬🇧</span> EN
-            </button>
-            <button
-              type="button"
-              class="btn-lang"
-              (click)="loadBengaliSample()"
-              [disabled]="_isStreaming || _isProcessing"
-            >
-              <span class="lang-flag">🇧🇩</span> বাং
-            </button>
-            <button
-              type="button"
-              class="btn-lang"
-              (click)="loadHindiSample()"
-              [disabled]="_isStreaming || _isProcessing"
-            >
-              <span class="lang-flag">🇮🇳</span> हि
-            </button>
-            <button
-              type="button"
-              class="btn-icon"
-              (click)="clearNote()"
-              [disabled]="_isStreaming || _isProcessing"
-              title="Clear"
-            >
-              <i class="fa-solid fa-eraser"></i>
-            </button>
+          <button type="button"
+                  class="btn-lang"
+                  (click)="loadSampleNote()"
+                  [disabled]="_isStreaming || _isProcessing">
+            <span class="lang-flag">🇬🇧</span> EN
+          </button>
+          <button type="button"
+                  class="btn-lang"
+                  (click)="loadBengaliSample()"
+                  [disabled]="_isStreaming || _isProcessing">
+            <span class="lang-flag">🇧🇩</span> বাং
+          </button>
+          <button type="button"
+                  class="btn-lang"
+                  (click)="loadHindiSample()"
+                  [disabled]="_isStreaming || _isProcessing">
+            <span class="lang-flag">🇮🇳</span> हि
+          </button>
+          <button type="button"
+                  class="btn-icon"
+                  (click)="clearNote()"
+                  [disabled]="_isStreaming || _isProcessing"
+                  title="Clear">
+            <i class="fa-solid fa-eraser"></i>
+          </button>
+          <button type="button"
+                  class="btn-icon"
+                  (click)="generateMeetingSummary()"
+                  [disabled]="_isStreaming || _isProcessing"
+                  title="Clear">
+            <i class="fa-solid fa-list-alt"></i>
+          </button>
         </div>
       </div>
       <div class="panel-content">
         <!-- Clinical Note Input with pending text indicator -->
         <div class="textarea-wrapper" [class.has-pending]="pendingText()">
-          <textarea
-            class="clinical-note-input"
-            [value]="clinicalNote()"
-            (input)="onTextareaInput($any($event.target).value)"
-            rows="14"
-            [class.recording-active]="isRecording()"
-            placeholder="Paste your clinical note here or click the microphone to dictate...
+          <textarea class="clinical-note-input"
+                    [value]="clinicalNote()"
+                    (input)="onTextareaInput($any($event.target).value)"
+                    rows="14"
+                    [class.recording-active]="isRecording()"
+                    placeholder="Paste your clinical note here or click the microphone to dictate...
 
 Example format:
 Patient: John Doe, 45-year-old male
@@ -91,8 +85,7 @@ History: Patient reports dry cough, fever up to 101°F
 Physical Exam: BP 120/80, Pulse 88/min, Temp 100.4°F
 Diagnosis: Upper Respiratory Tract Infection
 Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
-            [disabled]="_isStreaming || _isProcessing"
-          >
+                    [disabled]="_isStreaming || _isProcessing">
           </textarea>
 
           <!-- Pending text indicator overlay -->
@@ -115,25 +108,19 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
         }
 
         <div class="action-bar">
-          <button
-            type="button"
-            class="btn-action btn-stream"
-            (click)="streamSummary()"
-            [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()"
-          >
+          <button type="button"
+                  class="btn-action btn-stream"
+                  (click)="streamSummary()"
+                  [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()">
             <i class="fa-solid fa-bolt" [class.fa-spin]="_isStreaming"></i>
             {{ _isStreaming ? "Streaming..." : "Stream Process" }}
           </button>
-          <button
-            type="button"
-            class="btn-action btn-generate"
-            (click)="getCompleteSummary()"
-            [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()"
-          >
-            <i
-              class="fa-solid fa-wand-magic-sparkles"
-              [class.fa-spin]="_isProcessing"
-            ></i>
+          <button type="button"
+                  class="btn-action btn-generate"
+                  (click)="getCompleteSummary()"
+                  [disabled]="_isStreaming || _isProcessing || !clinicalNote().trim()">
+            <i class="fa-solid fa-wand-magic-sparkles"
+               [class.fa-spin]="_isProcessing"></i>
             {{ _isProcessing ? "Processing..." : "Generate Prescription" }}
           </button>
         </div>
@@ -144,9 +131,7 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
     @if (aiResponse()) {
     <div class="panel panel-response">
       <div class="panel-header panel-header-success">
-        <span class="panel-title"
-          ><i class="fa-solid fa-sparkles"></i> AI Analysis Result</span
-        >
+        <span class="panel-title"><i class="fa-solid fa-sparkles"></i> AI Analysis Result</span>
         <span class="status-badge">
           <i class="fa-solid fa-check-circle"></i> Complete
         </span>

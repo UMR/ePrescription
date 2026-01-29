@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Prescription.Application;
+using Prescription.Application.Interface;
+using Prescription.Application.Services;
 using Prescription.Infrastructure;
 using System;
 
@@ -18,6 +20,7 @@ builder.Services.AddControllers()
 
 builder.AddApplicationServices();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<ISummaryService, SummaryService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

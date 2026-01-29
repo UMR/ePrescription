@@ -17,8 +17,4 @@
     <ProjectReference Include="..\Prescription.Domain\Prescription.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interface\" />
-  </ItemGroup>
-
 </Project>

@@ -4,13 +4,43 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ClinicalNoteSummary } from '../models/prescription.model';
 
+// Meeting Notes interfaces
+export interface MeetingNotesRequest {
+  meetingNotes: string;
+  language?: string;
+  summaryLength?: string;
+  meetingTitle?: string;
+  meetingDate?: string;
+}
+
+export interface ActionItem {
+  description: string;
+  assignedTo?: string;
+  dueDate?: string;
+  priority?: string;
+}
+
+export interface MeetingNotesResponse {
+  summary: string;
+  detectedLanguage: string;
+  keyPoints: string[];
+  actionItems: ActionItem[];
+  decisions: string[];
+  attendees: string[];
+  processedAt: string;
+  originalWordCount: number;
+  summaryWordCount: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class ClinicalChatService {
     private apiUrl = `${environment.apiUrl}/Chat`;
+    private reportsApiUrl = `${environment.apiUrl}/Reports`;
 
     constructor(private http: HttpClient) { }
+
     streamClinicalNoteSummary(clinicalNote: string): Observable<string> {
         return new Observable(observer => {
             let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
@@ -106,6 +136,27 @@ export class ClinicalChatService {
             };
         });
     }
+
+    /**
+     * Summarize meeting notes using the Reports API
+     * Calls: POST /api/Reports/summarize-meeting
+     */
+    summarizeMeetingNotes(request: MeetingNotesRequest): Observable<MeetingNotesResponse> {
+        return this.http.post<MeetingNotesResponse>(`${this.reportsApiUrl}/summarize-meeting`, request);
+    }
+
+    /**
+     * Quick text summarization
+     * Calls: POST /api/Reports/summarize-text
+     */
+    summarizeText(text: string, maxWords?: number): Observable<{summary: string; originalLength: number; summaryLength: number; processedAt: string}> {
+        const request = {
+            text: text,
+            maxWords: maxWords
+        };
+        return this.http.post<{summary: string; originalLength: number; summaryLength: number; processedAt: string}>(`${this.reportsApiUrl}/summarize-text`, request);
+    }
+
     parseClinicalNoteSummary(jsonResponse: string): ClinicalNoteSummary | null {
         try {
             if (!jsonResponse || jsonResponse.trim().length === 0) {
