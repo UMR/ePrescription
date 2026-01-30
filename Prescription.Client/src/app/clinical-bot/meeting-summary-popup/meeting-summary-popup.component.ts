@@ -38,7 +38,6 @@ export class MeetingSummaryPopupComponent implements OnChanges, OnDestroy {
     }
 
     if (changes['response'] && this.response && this.isOpen) {
-      // Start streaming after a short "thinking" delay
       this.thinkingTimeout = setTimeout(() => {
         this.startStreaming();
       }, 1500);
@@ -84,7 +83,6 @@ export class MeetingSummaryPopupComponent implements OnChanges, OnDestroy {
         this.currentCharIndex++;
         this.displayedSummary.set(fullSummary.substring(0, this.currentCharIndex));
       } else {
-        // Summary complete, show key points and decisions
         this.cleanup();
         this.displayedKeyPoints.set(this.response?.keyPoints || []);
         this.displayedDecisions.set(this.response?.decisions || []);
