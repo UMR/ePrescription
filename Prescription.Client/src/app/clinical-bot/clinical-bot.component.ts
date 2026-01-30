@@ -6,11 +6,12 @@ import { ClinicalChatService, MeetingNotesRequest, MeetingNotesResponse } from '
 import { PrescriptionService } from '../services/prescription.service';
 import { SpeechRecorderComponent } from '../speech-recorder/speech-recorder.component';
 import { SpeechRecordingState, SpeechError, RealtimeTextData, SegmentCompleteData } from '../models/speech-to-text.model';
+import { MeetingSummaryPopupComponent } from './meeting-summary-popup/meeting-summary-popup.component';
 
 @Component({
   selector: 'app-clinical-bot',
   standalone: true,
-  imports: [FormsModule, SpeechRecorderComponent],
+  imports: [FormsModule, SpeechRecorderComponent, MeetingSummaryPopupComponent],
   templateUrl: './clinical-bot.component.html',
   styleUrl: './clinical-bot.component.css'
 })
@@ -26,6 +27,11 @@ export class ClinicalBotComponent implements OnDestroy {
   isProcessing = signal<boolean>(false);
   errorMessage = signal<string>('');
   isRecording = signal<boolean>(false);
+
+  // Meeting summary popup signals
+  isSummaryPopupOpen = signal<boolean>(false);
+  meetingSummaryResponse = signal<MeetingNotesResponse | null>(null);
+  meetingSummaryError = signal<string | null>(null);
 
   // Speech tracking signals
   // baseText: The text content before any pending speech (includes user edits + finalized speech)
@@ -327,30 +333,42 @@ Plan:
     }
   }
 
-  // In your component
   generateMeetingSummary() {
+    if (!this.clinicalNote().trim()) {
+      this.errorMessage.set('Please enter a clinical note first');
+      return;
+    }
+
+    this.meetingSummaryResponse.set(null);
+    this.meetingSummaryError.set(null);
+    this.isSummaryPopupOpen.set(true);
+
     const request: MeetingNotesRequest = {
       meetingNotes: this.clinicalNote(),
-      language: 'en', // or 'bn' for Bengali
+      language: 'en',
       summaryLength: 'medium',
       meetingTitle: 'Clinical Consultation',
       meetingDate: new Date().toISOString()
     };
 
     this.clinicalChatService.summarizeMeetingNotes(request)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: MeetingNotesResponse) => {
-          console.log('Meeting summary:', response);
-          // Process the response
-          console.log('Summary:', response.summary);
-          console.log('Key Points:', response.keyPoints);
-          console.log('Action Items:', response.actionItems);
-          console.log('Decisions:', response.decisions);
+          console.log('Meeting summary received:', response);
+          this.meetingSummaryResponse.set(response);
         },
         error: (error) => {
           console.error('Error generating meeting summary:', error);
+          this.meetingSummaryError.set('An error occurred');
         }
       });
+  }
+
+  closeSummaryPopup() {
+    this.isSummaryPopupOpen.set(false);
+    this.meetingSummaryResponse.set(null);
+    this.meetingSummaryError.set(null);
   }
 
   /**

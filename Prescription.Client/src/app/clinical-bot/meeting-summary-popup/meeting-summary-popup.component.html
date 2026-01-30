@@ -1,0 +1,98 @@
+@if (isOpen) {
+<div class="popup-backdrop" (click)="onBackdropClick($event)">
+  <div class="popup-container">
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="header-title">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Meeting Summary</span>
+      </div>
+      <button type="button" class="btn-close" (click)="onClose()" title="Close">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="popup-content">
+      @switch (state()) {
+        @case ('thinking') {
+          <div class="thinking-state">
+            <div class="thinking-animation">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <span class="thinking-text">AI is analyzing your notes...</span>
+          </div>
+        }
+
+        @case ('streaming') {
+          <div class="summary-content">
+            <div class="summary-section">
+              <h4 class="section-title">
+                <i class="fa-solid fa-file-lines"></i> Summary
+              </h4>
+              <p class="summary-text">{{ displayedSummary() }}<span class="cursor-blink">|</span></p>
+            </div>
+          </div>
+        }
+
+        @case ('complete') {
+          <div class="summary-content">
+            <div class="summary-section">
+              <h4 class="section-title">
+                <i class="fa-solid fa-file-lines"></i> Summary
+              </h4>
+              <p class="summary-text">{{ displayedSummary() }}</p>
+            </div>
+
+            @if (displayedKeyPoints().length > 0) {
+              <div class="summary-section">
+                <h4 class="section-title">
+                  <i class="fa-solid fa-key"></i> Key Points
+                </h4>
+                <ul class="key-points-list">
+                  @for (point of displayedKeyPoints(); track point) {
+                    <li>{{ point }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (displayedDecisions().length > 0) {
+              <div class="summary-section">
+                <h4 class="section-title">
+                  <i class="fa-solid fa-gavel"></i> Decisions
+                </h4>
+                <ul class="decisions-list">
+                  @for (decision of displayedDecisions(); track decision) {
+                    <li>{{ decision }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (response) {
+              <div class="summary-footer">
+                <span class="meta-info">
+                  <i class="fa-solid fa-language"></i> {{ response.detectedLanguage }}
+                </span>
+                <span class="meta-info">
+                  <i class="fa-solid fa-compress"></i> {{ response.originalWordCount }} → {{ response.summaryWordCount }} words
+                </span>
+              </div>
+            }
+          </div>
+        }
+
+        @case ('error') {
+          <div class="error-state">
+            <i class="fa-solid fa-exclamation-triangle error-icon"></i>
+            <span class="error-text">An error occurred</span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+}

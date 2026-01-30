@@ -62,7 +62,7 @@
                   class="btn-icon"
                   (click)="generateMeetingSummary()"
                   [disabled]="_isStreaming || _isProcessing"
-                  title="Clear">
+                  title="Meeting Summary">
             <i class="fa-solid fa-list-alt"></i>
           </button>
         </div>
@@ -148,4 +148,11 @@ Plan: Rest, fluids, Paracetamol 500mg TDS x 5 days"
     </div>
     }
   </div>
+
+  <!-- Meeting Summary Popup -->
+  <app-meeting-summary-popup
+    [isOpen]="isSummaryPopupOpen()"
+    [response]="meetingSummaryResponse()"
+    [error]="meetingSummaryError()"
+    (close)="closeSummaryPopup()" />
 </div>
